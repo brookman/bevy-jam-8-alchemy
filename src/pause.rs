@@ -43,6 +43,6 @@ fn resume_time(mut time: ResMut<Time<Virtual>>) {
     time.unpause();
 }
 
-fn spawn_overlay(commands: Commands) {
-    spawn_message(commands, "Paused", PauseState::Paused);
+fn spawn_overlay(commands: Commands, asset_server: Res<AssetServer>) {
+    spawn_message(commands, asset_server, "Paused", PauseState::Paused);
 }

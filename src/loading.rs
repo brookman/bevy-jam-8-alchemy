@@ -8,16 +8,28 @@ pub fn plugin(app: &mut App) {
                 .continue_to_state(AppState::Running)
                 .on_failure_continue_to_state(AppState::LoadFailed),
         )
-        .add_systems(OnEnter(AppState::Loading), |commands: Commands| {
-            spawn_message(commands, "Loading...", AppState::Loading);
-        })
-        .add_systems(OnEnter(AppState::LoadFailed), |commands: Commands| {
-            spawn_message(
-                commands,
-                "Failed to load assets, see log",
-                AppState::LoadFailed,
-            );
-        });
+        .add_systems(
+            OnEnter(AppState::Loading),
+            |commands: Commands, asset_server: Res<AssetServer>| {
+                spawn_message(
+                    commands,
+                    asset_server,
+                    "Loading...\n🜁🜂🜃🜄🜅🜆🜇🜈🜉🜊🜋🜌🜍🜎🜏",
+                    AppState::Loading,
+                );
+            },
+        )
+        .add_systems(
+            OnEnter(AppState::LoadFailed),
+            |commands: Commands, asset_server: Res<AssetServer>| {
+                spawn_message(
+                    commands,
+                    asset_server,
+                    "Failed to load assets, see log",
+                    AppState::LoadFailed,
+                );
+            },
+        );
 }
 
 #[derive(States, Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -28,7 +40,12 @@ pub enum AppState {
     LoadFailed,
 }
 
-pub fn spawn_message<S: States>(mut commands: Commands, text: &'static str, state: S) {
+pub fn spawn_message<S: States>(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    text: &'static str,
+    state: S,
+) {
     commands.spawn((
         Name::new(text),
         DespawnOnExit(state),
@@ -41,8 +58,14 @@ pub fn spawn_message<S: States>(mut commands: Commands, text: &'static str, stat
         },
         Pickable::IGNORE,
         children![(
-            Text::new(text),
-            TextFont::from_font_size(48.0),
+            Text::new(text.to_uppercase()),
+            TextFont {
+                font: asset_server
+                    .load("fonts/NotoSansSymbols-VariableFont_wght.ttf")
+                    .into(),
+                font_size: FontSize::Px(48.0),
+                ..default()
+            },
             Pickable::IGNORE,
         )],
     ));
