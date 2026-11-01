@@ -91,9 +91,10 @@ fn show_dock(world: &mut World) {
 
     let game_rect = world.resource::<DockUi>().game_rect;
     let over_game = ctx.rect_contains_pointer(egui::LayerId::background(), game_rect);
-    world
-        .resource_mut::<CameraInputBlocked>()
-        .set_if_neq(CameraInputBlocked(!over_game));
+
+    if let Some(blocked) = &mut world.get_resource_mut::<CameraInputBlocked>() {
+        blocked.set_if_neq(CameraInputBlocked(!over_game));
+    }
 
     // Typing into an inspector field shouldn't trigger game actions.
     let captured = KeyboardCaptured(ctx.egui_wants_keyboard_input());
@@ -151,17 +152,19 @@ impl egui_dock::TabViewer for TabViewer<'_> {
 }
 
 fn block_picking_outside_game(
-    blocked: Res<CameraInputBlocked>,
+    blocked: Option<Res<CameraInputBlocked>>,
     egui_context: Single<Entity, With<PrimaryEguiContext>>,
     mut hits: MessageWriter<PointerHits>,
 ) {
-    if blocked.0 {
-        let entity = *egui_context;
-        hits.write(PointerHits::new(
-            PointerId::Mouse,
-            vec![(entity, HitData::new(entity, 0.0, None, None))],
-            f32::MAX,
-        ));
+    if let Some(blocked) = blocked {
+        if blocked.0 {
+            let entity = *egui_context;
+            hits.write(PointerHits::new(
+                PointerId::Mouse,
+                vec![(entity, HitData::new(entity, 0.0, None, None))],
+                f32::MAX,
+            ));
+        }
     }
 }
 

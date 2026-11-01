@@ -1,3 +1,4 @@
+mod ahoy;
 mod audio;
 #[cfg(all(debug_assertions, not(target_arch = "wasm32")))]
 mod blender;
@@ -12,6 +13,7 @@ mod pause;
 mod physics;
 mod scene;
 mod skein;
+mod util;
 
 use bevy::app::PluginGroupBuilder;
 use bevy::asset::AssetMode;
@@ -59,12 +61,13 @@ pub fn plugin(app: &mut App) {
     app.add_plugins((
         loading::plugin, // must be first
         audio::plugin,
-        camera::plugin,
+        //camera::plugin,
         grayscale::plugin,
         input::plugin,
         pause::plugin,
         physics::plugin,
-        scene::plugin,
+        //scene::plugin,
         skein::plugin,
+        ahoy::plugin, // must be after physics
     ));
 }
