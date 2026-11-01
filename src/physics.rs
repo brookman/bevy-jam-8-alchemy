@@ -1,7 +1,7 @@
 //! Balls and their spawners come from Blender (skein components)
 
 use crate::input::{ClearSpheres, DropBurst};
-use crate::loading::AppState;
+use crate::loading::{AppState, LoadCollection};
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy::world_serialization::WorldInstanceReady;
@@ -15,9 +15,7 @@ pub fn plugin(app: &mut App) {
     app.add_plugins(PhysicsPlugins::default())
         .register_type::<Ball>()
         .register_type::<BallSpawner>()
-        .configure_loading_state(
-            LoadingStateConfig::new(AppState::Loading).load_collection::<BallAssets>(),
-        )
+        .load_collection::<BallAssets>()
         .add_observer(add_spawn_timer)
         .add_observer(launch_ball)
         .add_observer(drop_burst)

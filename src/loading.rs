@@ -40,6 +40,18 @@ pub enum AppState {
     LoadFailed,
 }
 
+pub trait LoadCollection {
+    fn load_collection<A: AssetCollection>(self: &mut Self) -> &mut Self;
+}
+
+impl LoadCollection for App {
+    fn load_collection<A: AssetCollection>(self: &mut Self) -> &mut Self {
+        self.configure_loading_state(
+            LoadingStateConfig::new(AppState::Loading).load_collection::<A>(),
+        )
+    }
+}
+
 pub fn spawn_message<S: States>(
     mut commands: Commands,
     asset_server: Res<AssetServer>,

@@ -1,6 +1,6 @@
 //! Uses Bevy's built-in audio until `bevy_seedling` supports Bevy 0.20.
 
-use crate::loading::AppState;
+use crate::loading::{AppState, LoadCollection};
 use crate::physics::Ball;
 use avian3d::prelude::{Collisions, ComputedMass, PhysicsSchedule, PhysicsStepSystems};
 use bevy::audio::Volume;
@@ -13,10 +13,7 @@ const FULL_VOLUME_STRENGTH: f32 = 25.0;
 pub fn plugin(app: &mut App) {
     // `PhysicsSchedule` only runs when physics actually steps; outside it, a
     // paused simulation would replay the last step's impulses every tick.
-    app.configure_loading_state(
-        LoadingStateConfig::new(AppState::Loading).load_collection::<AudioAssets>(),
-    )
-    .add_systems(
+    app.load_collection::<AudioAssets>().add_systems(
         PhysicsSchedule,
         play_impacts
             .in_set(PhysicsStepSystems::Last)

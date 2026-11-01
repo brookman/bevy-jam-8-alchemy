@@ -1,25 +1,21 @@
-use crate::loading::AppState;
+use crate::loading::{AppState, LoadCollection};
 use avian3d::prelude::*;
 use bevy::light::atmosphere::ScatteringMedium;
 use bevy::light::light_consts::lux;
 use bevy::light::{Atmosphere, CascadeShadowConfigBuilder, DirectionalLightShadowMap};
 use bevy::prelude::*;
 use bevy_asset_loader::asset_collection::AssetCollection;
-use bevy_asset_loader::loading_state::LoadingStateAppExt;
-use bevy_asset_loader::prelude::{ConfigureLoadingState, LoadingStateConfig};
 use std::f32::consts::TAU;
 
 pub fn plugin(app: &mut App) {
-    app.configure_loading_state(
-        LoadingStateConfig::new(AppState::Loading).load_collection::<SceneAssets>(),
-    )
-    .insert_resource(DirectionalLightShadowMap { size: 4096 })
-    .insert_resource(GlobalAmbientLight::NONE)
-    .add_systems(
-        OnEnter(AppState::Running),
-        (spawn_scene, spawn_light, spawn_atmosphere, spawn_crosshair),
-    )
-    .add_systems(Update, turn_sun);
+    app.load_collection::<SceneAssets>()
+        .insert_resource(DirectionalLightShadowMap { size: 4096 })
+        .insert_resource(GlobalAmbientLight::NONE)
+        .add_systems(
+            OnEnter(AppState::Running),
+            (spawn_scene, spawn_light, spawn_atmosphere, spawn_crosshair),
+        )
+        .add_systems(Update, turn_sun);
 }
 
 #[derive(AssetCollection, Resource)]

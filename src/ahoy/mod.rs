@@ -3,6 +3,7 @@ use bevy_ahoy::prelude::*;
 use bevy_framepace::FramepacePlugin;
 
 mod ahoy_debug;
+mod camera;
 mod input;
 mod player;
 mod scene;
@@ -15,6 +16,7 @@ pub fn plugin(app: &mut App) {
         //MipmapGeneratorPlugin,
         scene::plugin,
         input::plugin,
+        camera::plugin,
         player::plugin,
         stable_ground::plugin,
         ahoy_debug::plugin,
