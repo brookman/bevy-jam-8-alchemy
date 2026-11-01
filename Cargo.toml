@@ -21,10 +21,12 @@ tracy = ["bevy/trace_tracy"]
 [dependencies]
 bevy = { version = "0.20", features = ["pan_orbit_camera", "asset_processor"] }
 bevy_ahoy = { git = "https://github.com/brookman/bevy_ahoy.git" }
+bevy_fix_cursor_unlock_web = { git = "https://github.com/brookman/bevy_fix_cursor_unlock_web.git" }
 bevy_asset_loader = "0.28"
 egui_dock = { version = "0.21", optional = true }
 bevy_egui = { version = "0.43", default-features = false, features = ["picking"], optional = true }
 bevy_enhanced_input = "0.27"
+bevy_framepace = { git = "https://github.com/martinfrances107/bevy_framepace.git", rev = "a6e0e7cd57d56b6a4419f7be23f1c6580b2121df" }
 bevy-inspector-egui = { version = "0.38", optional = true }
 bevy_skein = { version = "0.7", default-features = false }
 

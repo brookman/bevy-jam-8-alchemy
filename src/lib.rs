@@ -13,7 +13,6 @@ mod pause;
 mod physics;
 mod scene;
 mod skein;
-mod util;
 
 use bevy::app::PluginGroupBuilder;
 use bevy::asset::AssetMode;
