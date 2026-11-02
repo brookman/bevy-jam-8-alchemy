@@ -33,7 +33,7 @@ pub struct DropBurst;
 
 #[derive(InputAction)]
 #[action_output(bool)]
-pub struct ClearSpheres;
+pub struct ClearBalls;
 
 #[derive(InputAction)]
 #[action_output(bool)]
@@ -65,7 +65,7 @@ fn spawn(mut commands: Commands) {
                 Binding(GamepadButton::South)
             ]
             --
-            Action::<ClearSpheres>::new()
+            Action::<ClearBalls>::new()
             Bindings [
                 Binding(KeyCode::KeyR)
                 --
