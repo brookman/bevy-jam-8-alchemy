@@ -1,5 +1,6 @@
-use avian3d::prelude::SpatialQueryFilter;
 use crate::loading::LoadCollection;
+use crate::physics::CollisionLayer;
+use avian3d::prelude::SpatialQueryFilter;
 use bevy::anti_alias::taa::TemporalAntiAliasing;
 use bevy::app::App;
 use bevy::asset::Handle;
@@ -10,10 +11,11 @@ use bevy::light::EnvironmentMapLight;
 use bevy::pbr::ScreenSpaceAmbientOcclusion;
 use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
-use bevy_ahoy::{CharacterController, PickupConfig, PickupHoldConfig, PickupPullConfig, PickupThrowConfig};
 use bevy_ahoy::camera::CharacterControllerCameraOf;
+use bevy_ahoy::{
+    CharacterController, PickupConfig, PickupHoldConfig, PickupPullConfig, PickupThrowConfig,
+};
 use bevy_asset_loader::asset_collection::AssetCollection;
-use crate::physics::CollisionLayer;
 
 pub fn plugin(app: &mut App) {
     app.load_collection::<CameraAssets>()
@@ -68,7 +70,7 @@ fn spawn_camera(
                 max_prop_mass: 1000.0,
                 ..default()
             },
-            throw: PickupThrowConfig{
+            throw: PickupThrowConfig {
                 cutoff_mass_for_slowdown: 50.0,
                 linear_speed_range: 0.0..=10.0,
                 angular_speed_range: 0.0..=3.0,

@@ -17,10 +17,10 @@ const SELECTION_COLOR: Color = Color::linear_rgb(0.0, 0.75, 0.0);
 
 pub fn plugin(app: &mut App) {
     app.add_plugins((
-        LogDiagnosticsPlugin::default(),
-        FrameTimeDiagnosticsPlugin::default(),
-        EntityCountDiagnosticsPlugin::default(),
-        SystemInformationDiagnosticsPlugin,
+        // LogDiagnosticsPlugin::default(),
+        // FrameTimeDiagnosticsPlugin::default(),
+        // EntityCountDiagnosticsPlugin::default(),
+        // SystemInformationDiagnosticsPlugin,
         EguiPlugin::default(),
         DefaultInspectorConfigPlugin,
         dock::plugin,

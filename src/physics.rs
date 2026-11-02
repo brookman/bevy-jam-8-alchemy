@@ -11,12 +11,13 @@ pub fn plugin(app: &mut App) {
     app.add_plugins(PhysicsPlugins::default())
         .register_type::<Ball>()
         .load_collection::<BallAssets>()
-        .add_observer(clear_balls)
         .add_systems(OnEnter(AppState::Running), spawn_ball_prop)
         .add_systems(
             Update,
             (despawn_fallen, update_damping).run_if(in_state(AppState::Running)),
-        );
+        )
+        .add_observer(spawn_ball_components)
+        .add_observer(clear_balls);
 }
 
 #[derive(AssetCollection, Resource)]
@@ -39,6 +40,9 @@ pub enum CollisionLayer {
 #[type_path = "game"]
 pub struct Ball;
 
+#[derive(Component)]
+struct BallRoot;
+
 #[derive(Component, Reflect, Debug, Default)]
 #[reflect(Component, Default)]
 #[require(AngularDamping, CollidingEntities)]
@@ -49,27 +53,15 @@ struct AdaptiveAngularDamping {
 }
 
 fn spawn_ball_prop(mut commands: Commands, assets: Res<BallAssets>) {
-    let position = Vec3::new(0.0, 20.0, -5.0);
+    commands.spawn((BallRoot, WorldAssetRoot(assets.scene.clone())));
+}
 
-    commands.spawn((
-        Name::new("BallProp"),
-        Ball,
-        WorldAssetRoot(assets.scene.clone()),
+fn spawn_ball_components(ball: On<Add<Ball>>, mut commands: Commands) {
+    let position = Vec3::new(0.0, 20.0, -5.0);
+    commands.entity(ball.entity).insert((
         Transform::from_translation(position),
         TransformInterpolation,
-        RigidBody::Dynamic,
-        ColliderConstructor::Sphere { radius: 0.15 },
         CollisionLayers::new(CollisionLayer::Prop, LayerMask::ALL),
-        Mass(0.5),
-        Restitution {
-            coefficient: 0.75,
-            combine_rule: CoefficientCombine::Average,
-        },
-        Friction::default(),
-        AdaptiveAngularDamping {
-            default: 0.1,
-            colliding: 4.0,
-        },
     ));
 }
 
@@ -89,17 +81,30 @@ fn update_damping(
     }
 }
 
-fn despawn_fallen(mut commands: Commands, balls: Query<(Entity, &GlobalTransform), With<Ball>>) {
+fn despawn_fallen(
+    mut commands: Commands,
+    balls: Query<(Entity, &GlobalTransform), With<Ball>>,
+    parents: Query<&ChildOf>,
+    roots: Query<(), With<BallRoot>>,
+) {
     for (ball, transform) in &balls {
         if transform.translation().y < DESPAWN_HEIGHT {
-            commands.entity(ball).despawn();
+            let root = parents
+                .iter_ancestors(ball)
+                .find(|&ancestor| roots.contains(ancestor))
+                .unwrap_or(ball);
+            commands.entity(root).despawn();
         }
     }
 }
 
-fn clear_balls(_: On<Start<ClearBalls>>, mut commands: Commands, balls: Query<Entity, With<Ball>>) {
-    for ball in &balls {
-        commands.entity(ball).despawn();
+fn clear_balls(
+    _: On<Start<ClearBalls>>,
+    mut commands: Commands,
+    roots: Query<Entity, With<BallRoot>>,
+) {
+    for root in &roots {
+        commands.entity(root).despawn();
     }
 }
 
@@ -129,7 +134,6 @@ fn clear_balls(_: On<Start<ClearBalls>>, mut commands: Commands, balls: Query<En
 //     }
 //     commands.entity(ready.entity).remove::<InitialVelocity>();
 // }
-
 
 // fn add_spawn_timer(
 //     add: On<Add<BallSpawner>>,
