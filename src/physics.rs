@@ -23,7 +23,7 @@ pub fn plugin(app: &mut App) {
         .add_systems(OnEnter(AppState::Running), spawn_ball_prop)
         .add_systems(
             Update,
-            (spawn_timed, despawn_fallen).run_if(in_state(AppState::Running)),
+            (spawn_timed, despawn_fallen, update_damping).run_if(in_state(AppState::Running)),
         );
 }
 
@@ -75,8 +75,12 @@ struct InitialVelocity(Vec3);
 
 #[derive(Component, Reflect, Debug, Default)]
 #[reflect(Component, Default)]
+#[require(AngularDamping, CollidingEntities)]
 #[type_path = "game"]
-struct CurrentCollisionCount(i32);
+struct AdaptiveAngularDamping {
+    default: f32,
+    colliding: f32,
+}
 
 fn add_spawn_timer(
     add: On<Add<BallSpawner>>,
@@ -144,63 +148,43 @@ fn spawn_ball(
 fn spawn_ball_prop(mut commands: Commands, assets: Res<BallAssets>) {
     let position = Vec3::new(0.0, 30.0, 0.0);
     let velocity = random_unit_box() * 0.1;
-    commands
-        .spawn((
-            Name::new("BallProp"),
-            BallRoot,
-            Ball,
-            InitialVelocity(velocity),
-            WorldAssetRoot(assets.scene.clone()),
-            Transform::from_translation(position),
-            ColliderConstructor::Sphere { radius: 0.15 },
-            CollisionLayers::new(CollisionLayer::Prop, LayerMask::ALL),
-            RigidBody::Dynamic,
-            Mass(0.5),
-            Restitution {
-                coefficient: 0.75,
-                combine_rule: CoefficientCombine::Average,
-            },
-            // Friction {
-            //     dynamic_coefficient: 0.5,
-            //     static_coefficient: 0.5,
-            //     combine_rule: CoefficientCombine::Average,
-            // },
-            AngularDamping(0.1),
-            TransformInterpolation,
-            CollisionEventsEnabled,
-            CurrentCollisionCount(0),
-        ))
-        .observe(on_ball_collision_start)
-        .observe(on_ball_collision_end);
+    commands.spawn((
+        Name::new("BallProp"),
+        BallRoot,
+        Ball,
+        InitialVelocity(velocity),
+        WorldAssetRoot(assets.scene.clone()),
+        Transform::from_translation(position),
+        ColliderConstructor::Sphere { radius: 0.15 },
+        CollisionLayers::new(CollisionLayer::Prop, LayerMask::ALL),
+        RigidBody::Dynamic,
+        Mass(0.5),
+        Restitution {
+            coefficient: 0.75,
+            combine_rule: CoefficientCombine::Average,
+        },
+        Friction::default(),
+        AdaptiveAngularDamping {
+            default: 0.1,
+            colliding: 4.0,
+        },
+        TransformInterpolation,
+    ));
 }
 
-fn on_ball_collision_start(
-    event: On<CollisionStart>,
-    mut collision_count: Query<&mut CurrentCollisionCount>,
-    mut damping: Query<&mut AngularDamping>,
+fn update_damping(
+    query: Query<(
+        &CollidingEntities,
+        &AdaptiveAngularDamping,
+        &mut AngularDamping,
+    )>,
 ) {
-    let ball = event.collider1;
-    if let Ok(count) = &mut collision_count.get_mut(ball) {
-        count.0 += 1;
-        update_damping(ball, &mut damping, count.0);
-    }
-}
-
-fn on_ball_collision_end(
-    event: On<CollisionEnd>,
-    mut collision_count: Query<&mut CurrentCollisionCount>,
-    mut damping: Query<&mut AngularDamping>,
-) {
-    let ball = event.collider1;
-    if let Ok(count) = &mut collision_count.get_mut(ball) {
-        count.0 -= 1;
-        update_damping(ball, &mut damping, count.0);
-    }
-}
-
-fn update_damping(ball: Entity, damping: &mut Query<&mut AngularDamping>, count: i32) {
-    if let Ok(damping) = &mut damping.get_mut(ball) {
-        damping.0 = if count <= 0 { 0.1 } else { 4.0 };
+    for (colliding, variable, mut damping) in query {
+        damping.0 = if colliding.0.is_empty() {
+            variable.default
+        } else {
+            variable.colliding
+        };
     }
 }
 
