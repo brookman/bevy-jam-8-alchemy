@@ -6,3 +6,4 @@
 *.blend[0-9]
 
 /imported_assets/
+.ppf_manifest.json
