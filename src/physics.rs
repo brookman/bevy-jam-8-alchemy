@@ -8,8 +8,7 @@ use bevy_enhanced_input::prelude::Start;
 const DESPAWN_HEIGHT: f32 = -30.0;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins(PhysicsPlugins::default())
-        .register_type::<Ball>()
+    app.add_plugins((PhysicsPlugins::default(), PhysicsDebugPlugin))
         .load_collection::<BallAssets>()
         .add_systems(OnEnter(AppState::Running), spawn_ball_prop)
         .add_systems(
@@ -30,8 +29,10 @@ struct BallAssets {
 pub enum CollisionLayer {
     #[default]
     Default,
+    Obstacle,
     Player,
     Prop,
+    None,
 }
 
 /// Skein marker for the ball's physics body (used for cleanup and impact sounds).
@@ -61,7 +62,8 @@ fn spawn_ball_components(ball: On<Add<Ball>>, mut commands: Commands) {
     commands.entity(ball.entity).insert((
         Transform::from_translation(position),
         TransformInterpolation,
-        CollisionLayers::new(CollisionLayer::Prop, LayerMask::ALL),
+        ColliderConstructor::Sphere { radius: 0.15 },
+        CollisionLayers::new(CollisionLayer::Prop, CollisionLayer::Obstacle),
     ));
 }
 

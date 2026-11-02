@@ -13,12 +13,17 @@ pub fn plugin(app: &mut App) {
 }
 
 fn spawn_player(mut commands: Commands) {
+
+    let controller = CharacterController {
+        filter: SpatialQueryFilter::from_mask(CollisionLayer::Obstacle),
+        ..default()
+    };
     commands.spawn_scene(bsn! {
         # Player
         Transform::from_xyz(0.0, 20.0, 0.0)
         Collider::cylinder(0.7, 1.8)
-        CollisionLayers::new(CollisionLayer::Player, LayerMask::ALL)
-        CharacterController::default()
+        //CollisionLayers::new(CollisionLayer::Player, CollisionLayer::Obstacle)
+        controller
         RigidBody::Kinematic
         Mass(90.0)
         StableGround::default()

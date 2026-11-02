@@ -1,4 +1,5 @@
 use crate::loading::{AppState, LoadCollection};
+use crate::physics::CollisionLayer;
 use avian3d::prelude::*;
 use bevy::light::atmosphere::ScatteringMedium;
 use bevy::light::light_consts::lux;
@@ -28,9 +29,14 @@ struct SceneAssets {
 
 fn spawn_scene(mut commands: Commands, assets: Res<SceneAssets>) {
     commands.spawn((
+        Name::new("Scene"),
         WorldAssetRoot(assets.playground.clone()),
         RigidBody::Static,
-        ColliderConstructorHierarchy::new(ColliderConstructor::ConvexHullFromMesh),
+        ColliderConstructorHierarchy::new(ColliderConstructor::ConvexHullFromMesh)
+            .with_default_layers(CollisionLayers::new(
+                CollisionLayer::Obstacle,
+                [CollisionLayer::Player, CollisionLayer::Prop],
+            )),
     ));
 }
 
