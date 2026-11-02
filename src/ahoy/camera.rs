@@ -1,3 +1,4 @@
+use avian3d::prelude::SpatialQueryFilter;
 use crate::loading::LoadCollection;
 use bevy::anti_alias::taa::TemporalAntiAliasing;
 use bevy::app::App;
@@ -9,9 +10,10 @@ use bevy::light::EnvironmentMapLight;
 use bevy::pbr::ScreenSpaceAmbientOcclusion;
 use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
-use bevy_ahoy::CharacterController;
+use bevy_ahoy::{CharacterController, PickupConfig, PickupHoldConfig, PickupPullConfig, PickupThrowConfig};
 use bevy_ahoy::camera::CharacterControllerCameraOf;
 use bevy_asset_loader::asset_collection::AssetCollection;
+use crate::physics::CollisionLayer;
 
 pub fn plugin(app: &mut App) {
     app.load_collection::<CameraAssets>()
@@ -27,12 +29,12 @@ struct CameraAssets {
 }
 
 fn spawn_camera(
-    controller_added: On<Add<CharacterController>>,
+    controller: On<Add<CharacterController>>,
     mut commands: Commands,
     assets: Res<CameraAssets>,
 ) {
     commands.spawn((
-        CharacterControllerCameraOf::new(controller_added.entity),
+        CharacterControllerCameraOf::new(controller.entity),
         Camera3d::default(),
         Projection::Perspective(PerspectiveProjection {
             far: 200.0,
@@ -53,5 +55,25 @@ fn spawn_camera(
         Tonemapping::TonyMcMapface,
         Bloom::default(),
         DebandDither::Enabled,
+        PickupConfig {
+            prop_filter: SpatialQueryFilter::from_mask(CollisionLayer::Prop),
+            actor_filter: SpatialQueryFilter::from_mask(CollisionLayer::Player),
+            obstacle_filter: SpatialQueryFilter::from_mask(CollisionLayer::Default),
+            hold: PickupHoldConfig {
+                preferred_distance: 1.0,
+                linear_velocity_easing: 0.2,
+                ..default()
+            },
+            pull: PickupPullConfig {
+                max_prop_mass: 1000.0,
+                ..default()
+            },
+            throw: PickupThrowConfig{
+                cutoff_mass_for_slowdown: 50.0,
+                linear_speed_range: 0.0..=10.0,
+                angular_speed_range: 0.0..=3.0,
+            },
+            ..default()
+        },
     ));
 }

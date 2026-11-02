@@ -5,7 +5,7 @@ use bevy_enhanced_input::prelude::*;
 pub fn plugin(app: &mut App) {
     app.add_plugins(EnhancedInputPlugin)
         .add_input_context::<Global>()
-        .add_input_context::<Sandbox>()
+        .add_input_context::<InGame>()
         .init_resource::<KeyboardCaptured>()
         .add_systems(Startup, spawn)
         .add_systems(Update, update_context_activity);
@@ -21,7 +21,7 @@ pub struct Global;
 
 /// Input context, inactive while paused
 #[derive(Component, Default, Clone)]
-pub struct Sandbox;
+pub struct InGame;
 
 #[derive(InputAction)]
 #[action_output(bool)]
@@ -56,8 +56,8 @@ fn spawn(mut commands: Commands) {
     });
     commands.spawn_scene(bsn! {
         Name::new("Sandbox Input")
-        Sandbox
-        Actions<Sandbox> [
+        InGame
+        Actions<InGame> [
             Action::<DropBurst>::new()
             Bindings [
                 Binding(KeyCode::Space)
@@ -87,7 +87,7 @@ fn update_context_activity(
     captured: Res<KeyboardCaptured>,
     pause: Option<Res<State<PauseState>>>,
     global: Query<(Entity, &ContextActivity<Global>)>,
-    sandbox: Query<(Entity, &ContextActivity<Sandbox>)>,
+    sandbox: Query<(Entity, &ContextActivity<InGame>)>,
 ) {
     let (global_active, sandbox_active) =
         context_activity(captured.0, pause.map(|pause| *pause.get()));
@@ -102,7 +102,7 @@ fn update_context_activity(
         if **activity != sandbox_active {
             commands
                 .entity(entity)
-                .insert(ContextActivity::<Sandbox>::new(sandbox_active));
+                .insert(ContextActivity::<InGame>::new(sandbox_active));
         }
     }
 }
