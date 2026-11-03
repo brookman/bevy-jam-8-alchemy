@@ -61,7 +61,7 @@ fn spawn_ball_components(ball: On<Add<Ball>>, mut commands: Commands) {
     let position = Vec3::new(0.0, 20.0, -5.0);
     commands.entity(ball.entity).insert((
         Transform::from_translation(position),
-        TransformInterpolation,
+        //TransformInterpolation,
         ColliderConstructor::Sphere { radius: 0.15 },
         CollisionLayers::new(CollisionLayer::Prop, CollisionLayer::Obstacle),
     ));

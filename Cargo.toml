@@ -36,6 +36,11 @@ fastrand = "2.5"
 thiserror = "2"
 serde = { version = "1", features = ["derive"] }
 
+[patch."https://github.com/brookman/avian_pickup.git"]
+# It's impossible to replace an URL with the same one (but a different revision).
+# Therefore, we use this hacky approach of replacing the https:// URL with an ssh:// URL.
+avian_pickup = { git = "ssh://git@github.com/brookman/avian_pickup", rev = "5cf6304eabfa4cd907741c28362d20527eac658a" }
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 bevy = { version = "0.20.0", features = ["webgpu"] }
 fastrand = { version = "2", features = ["js"] }

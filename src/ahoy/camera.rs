@@ -67,6 +67,8 @@ fn spawn_camera(
                 angular_velocity_easing: 0.0,
                 temporary_prop_mass: 0.1,
                 min_distance: 0.6,
+                max_linear_speed: 100.0,
+                max_angular_speed: 100.0,
                 ..default()
             },
             pull: PickupPullConfig { ..default() },
