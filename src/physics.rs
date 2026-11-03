@@ -63,7 +63,10 @@ fn spawn_ball_components(ball: On<Add<Ball>>, mut commands: Commands) {
         Transform::from_translation(position),
         //TransformInterpolation,
         ColliderConstructor::Sphere { radius: 0.15 },
-        CollisionLayers::new(CollisionLayer::Prop, CollisionLayer::Obstacle),
+        CollisionLayers::new(
+            CollisionLayer::Prop,
+            [CollisionLayer::Obstacle, CollisionLayer::Prop],
+        ),
     ));
 }
 

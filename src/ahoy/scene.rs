@@ -4,14 +4,18 @@ use avian3d::prelude::*;
 use bevy::light::atmosphere::ScatteringMedium;
 use bevy::light::light_consts::lux;
 use bevy::light::{Atmosphere, CascadeShadowConfigBuilder, DirectionalLightShadowMap};
-use bevy::prelude::*;
-use bevy_asset_loader::asset_collection::AssetCollection;
 use std::f32::consts::TAU;
+
+use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
+#[cfg(feature = "dev")]
+use bevy_inspector_egui::prelude::*;
 
 pub fn plugin(app: &mut App) {
     app.load_collection::<SceneAssets>()
         .insert_resource(DirectionalLightShadowMap { size: 4096 })
         .insert_resource(GlobalAmbientLight::NONE)
+        .init_resource::<SceneConfig2>()
         .add_systems(
             OnEnter(AppState::Running),
             (spawn_scene, spawn_light, spawn_atmosphere, spawn_crosshair),
@@ -19,10 +23,28 @@ pub fn plugin(app: &mut App) {
         .add_systems(Update, turn_sun);
 }
 
+#[derive(Resource, Reflect, Debug, Clone)]
+#[reflect(Resource, crate::config::Config)]
+#[cfg_attr(feature = "dev", derive(InspectorOptions), reflect(InspectorOptions))]
+pub struct SceneConfig2 {
+    #[cfg_attr(feature = "dev", inspector())]
+    pub light_color: Color,
+}
+
+impl Default for SceneConfig2 {
+    fn default() -> Self {
+        Self {
+            light_color: Color::WHITE,
+        }
+    }
+}
+
 #[derive(AssetCollection, Resource)]
 struct SceneAssets {
     #[asset(path = "maps/new_playground.blend#Scene0")]
     playground: Handle<WorldAsset>,
+    #[asset(path = "models/alchemy.blend#Scene0")]
+    table: Handle<WorldAsset>,
     #[asset(path = "sprites/crosshair.png")]
     crosshair_texture: Handle<Image>,
 }
@@ -37,6 +59,17 @@ fn spawn_scene(mut commands: Commands, assets: Res<SceneAssets>) {
                 CollisionLayer::Obstacle,
                 [CollisionLayer::Player, CollisionLayer::Prop],
             )),
+    ));
+    commands.spawn((
+        Name::new("Table"),
+        Transform::from_xyz(0.0, 7.75, -3.0),
+        WorldAssetRoot(assets.table.clone()),
+        // RigidBody::Static,
+        // ColliderConstructorHierarchy::new(ColliderConstructor::ConvexDecompositionFromMesh)
+        //     .with_default_layers(CollisionLayers::new(
+        //         CollisionLayer::Obstacle,
+        //         [CollisionLayer::Player, CollisionLayer::Prop],
+        //     )),
     ));
 }
 

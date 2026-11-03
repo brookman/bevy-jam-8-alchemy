@@ -65,7 +65,7 @@ pub fn plugin(app: &mut App) {
         input::plugin,
         pause::plugin,
         physics::plugin,
-        //scene::plugin,
+        scene::plugin,
         skein::plugin,
         ahoy::plugin, // must be after physics
     ));
