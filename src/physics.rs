@@ -8,15 +8,19 @@ use bevy_enhanced_input::prelude::Start;
 const DESPAWN_HEIGHT: f32 = -30.0;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins((PhysicsPlugins::default(), PhysicsDebugPlugin))
-        .load_collection::<BallAssets>()
-        .add_systems(OnEnter(AppState::Running), spawn_ball_prop)
-        .add_systems(
-            Update,
-            (despawn_fallen, update_damping).run_if(in_state(AppState::Running)),
-        )
-        .add_observer(spawn_ball_components)
-        .add_observer(clear_balls);
+    app.add_plugins((
+        PhysicsPlugins::default(),
+        #[cfg(feature = "dev")]
+        PhysicsDebugPlugin,
+    ))
+    .load_collection::<BallAssets>()
+    .add_systems(OnEnter(AppState::Running), spawn_ball_prop)
+    .add_systems(
+        Update,
+        (despawn_fallen, update_damping).run_if(in_state(AppState::Running)),
+    )
+    .add_observer(spawn_ball_components)
+    .add_observer(clear_balls);
 }
 
 #[derive(AssetCollection, Resource)]
