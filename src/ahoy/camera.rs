@@ -1,5 +1,5 @@
 use crate::loading::LoadCollection;
-use crate::physics::CollisionLayer;
+use crate::physics::collider::CollisionLayer;
 use avian3d::prelude::SpatialQueryFilter;
 use bevy::anti_alias::taa::TemporalAntiAliasing;
 use bevy::app::App;

@@ -1,5 +1,4 @@
 use crate::loading::{AppState, LoadCollection};
-use crate::physics::CollisionLayer;
 use avian3d::prelude::*;
 use bevy::light::atmosphere::ScatteringMedium;
 use bevy::light::light_consts::lux;

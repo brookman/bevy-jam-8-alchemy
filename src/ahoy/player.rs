@@ -2,7 +2,7 @@ use crate::ahoy::input::PlayerInput;
 use crate::ahoy::stable_ground::StableGround;
 use crate::input::InGame;
 use crate::loading::AppState;
-use crate::physics::CollisionLayer;
+use crate::physics::collider::CollisionLayer;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy_ahoy::prelude::*;
