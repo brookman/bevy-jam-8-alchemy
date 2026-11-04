@@ -16,6 +16,7 @@ fn spawn_player(mut commands: Commands) {
     let controller = CharacterController {
         filter: SpatialQueryFilter::from_mask(CollisionLayer::Obstacle),
         speed: 6.0,
+        jump_height: 0.75,
         ..default()
     };
     commands.spawn_scene(bsn! {

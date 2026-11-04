@@ -34,16 +34,16 @@ struct SceneAssets {
 }
 
 fn spawn_scene(mut commands: Commands, assets: Res<SceneAssets>) {
-    commands.spawn((
-        Name::new("Scene"),
-        WorldAssetRoot(assets.playground.clone()),
-        RigidBody::Static,
-        ColliderConstructorHierarchy::new(ColliderConstructor::ConvexHullFromMesh)
-            .with_default_layers(CollisionLayers::new(
-                CollisionLayer::Obstacle,
-                [CollisionLayer::Player, CollisionLayer::Prop],
-            )),
-    ));
+    // commands.spawn((
+    //     Name::new("Scene"),
+    //     WorldAssetRoot(assets.playground.clone()),
+    //     RigidBody::Static,
+    //     ColliderConstructorHierarchy::new(ColliderConstructor::ConvexHullFromMesh)
+    //         .with_default_layers(CollisionLayers::new(
+    //             CollisionLayer::Obstacle,
+    //             [CollisionLayer::Player, CollisionLayer::Prop],
+    //         )),
+    // ));
     commands.spawn((
         Name::new("Table"),
         Transform::from_xyz(0.0, 7.75, -3.0),
