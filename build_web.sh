@@ -17,7 +17,7 @@ fi
 
 # The browser can't run Blender: ship pre-processed assets like native release builds.
 # cargo run -- --process-assets
-# cargo build --profile web --target wasm32-unknown-unknown
+cargo build --profile web --target wasm32-unknown-unknown
 
 rm -rf "$OUT"
 "$BINDGEN" --no-typescript --target web --out-dir "$OUT" "$WASM"

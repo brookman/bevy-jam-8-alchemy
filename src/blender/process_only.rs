@@ -29,11 +29,13 @@ fn plugin(app: &mut App) {
 fn start(mut commands: Commands, processor: Res<AssetProcessor>) {
     let processor = processor.clone();
     let blends = find_blends(&super::assets_root());
+    info!("blends: {:?}", blends);
     let task = IoTaskPool::get().spawn(async move {
         processor.data().wait_until_finished().await;
         let mut failed = Vec::new();
         for rel in blends {
             let path = AssetPath::from_path(&rel).into_owned();
+            info!("blends: {:?}", path);
             if !matches!(
                 processor.data().wait_until_processed(path).await,
                 ProcessStatus::Processed

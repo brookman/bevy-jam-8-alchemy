@@ -13,9 +13,9 @@ pub fn plugin(app: &mut App) {
 }
 
 fn spawn_player(mut commands: Commands) {
-
     let controller = CharacterController {
         filter: SpatialQueryFilter::from_mask(CollisionLayer::Obstacle),
+        speed: 6.0,
         ..default()
     };
     commands.spawn_scene(bsn! {
