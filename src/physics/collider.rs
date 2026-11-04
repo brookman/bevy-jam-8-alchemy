@@ -83,7 +83,7 @@ fn setup_props(
             RigidBody::Dynamic,
             CollisionLayers::new(
                 CollisionLayer::Prop,
-                [CollisionLayer::Player, CollisionLayer::Obstacle],
+                [CollisionLayer::Obstacle, CollisionLayer::Prop],
             ),
             build_compound_collider(entity, body_transform, colliders, children),
             ColliderDensity(300.0),
@@ -102,6 +102,9 @@ fn build_compound_collider(
     children: Query<&Children>,
 ) -> Collider {
     let mut shapes = Vec::new();
+    if let Ok((_, shape)) = colliders.get(entity) {
+        shapes.push((Vec3::ZERO, Quat::IDENTITY, shape.create_collider()))
+    }
     for descendant in children.iter_descendants(entity) {
         if let Ok((collider_transform, shape)) = colliders.get(descendant) {
             let relative = body_transform.affine().inverse() * collider_transform.affine();
