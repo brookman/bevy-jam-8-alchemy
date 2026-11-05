@@ -56,7 +56,7 @@ fn spawn_light(mut commands: Commands) {
         Transform::from_xyz(0.0, 1.0, 0.0).looking_at(vec3(1.0, -2.0, -2.0), Vec3::Y),
         DirectionalLight {
             shadow_maps_enabled: true,
-            illuminance: lux::AMBIENT_DAYLIGHT,
+            illuminance: lux::OVERCAST_DAY,
             ..default()
         },
         CascadeShadowConfigBuilder {

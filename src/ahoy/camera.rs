@@ -50,7 +50,7 @@ fn spawn_camera(
         EnvironmentMapLight {
             diffuse_map: assets.diffuse_map.clone(),
             specular_map: assets.specular_map.clone(),
-            intensity: 600.0,
+            intensity: 500.0,
             ..default()
         },
         Exposure { ev100: 9.0 },
