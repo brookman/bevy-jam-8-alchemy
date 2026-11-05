@@ -7,5 +7,4 @@ pub enum CollisionLayer {
     Obstacle,
     Player,
     Prop,
-    None,
 }

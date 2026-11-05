@@ -1,8 +1,4 @@
 use crate::loading::{AppState, LoadCollection};
-use crate::physics::collider::CollisionLayer;
-use avian3d::prelude::{
-    ColliderConstructor, ColliderConstructorHierarchy, CollisionLayers, RigidBody,
-};
 use bevy::light::atmosphere::ScatteringMedium;
 use bevy::light::light_consts::lux;
 use bevy::light::{Atmosphere, CascadeShadowConfigBuilder, DirectionalLightShadowMap};
