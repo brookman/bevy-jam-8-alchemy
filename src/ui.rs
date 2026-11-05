@@ -2,7 +2,7 @@ use crate::{
     loading::{AppLoadingState, LoadCollection},
     pause::PauseState,
 };
-use bevy::prelude::*;
+use bevy::{prelude::*, ui_widgets};
 use bevy_asset_loader::asset_collection::AssetCollection;
 
 const DEFAULT_TEXT_SIZE: f32 = 48.0;
@@ -11,11 +11,13 @@ pub fn plugin(app: &mut App) {
     app.load_collection::<FontsAsssets>()
         .add_message::<SpawnLoadingText>()
         .add_message::<SpawnText>()
+        .add_message::<SpawnMenu>()
         .add_systems(
             Update,
             (
                 on_spawn_loading_text,
                 on_spawn_text.run_if(resource_exists::<FontsAsssets>),
+                on_spawn_menu.run_if(resource_exists::<FontsAsssets>),
             ),
         );
 }
@@ -33,6 +35,23 @@ pub enum FontType {
     Symbols,
 }
 
+impl FontType {
+    fn default_text_font() -> TextFont {
+        TextFont::from_font_size(DEFAULT_TEXT_SIZE)
+    }
+
+    fn to_text_font(&self, font_assets: &FontsAsssets) -> TextFont {
+        match self {
+            FontType::Default => Self::default_text_font(),
+            FontType::Symbols => TextFont {
+                font: font_assets.symbols.clone().into(),
+                font_size: FontSize::Px(DEFAULT_TEXT_SIZE),
+                ..default()
+            },
+        }
+    }
+}
+
 #[derive(Message)]
 pub struct SpawnLoadingText {
     pub text: String,
@@ -45,12 +64,19 @@ pub struct SpawnText {
     pub state: Option<PauseState>,
 }
 
+#[derive(Message)]
+pub struct SpawnMenu {
+    pub text: String,
+    pub font: FontType,
+    pub state: Option<PauseState>,
+}
+
 fn on_spawn_loading_text(mut messages: MessageReader<SpawnLoadingText>, mut commands: Commands) {
     for message in messages.read() {
         spawn_fullscreen_text(
             &message.text,
             Some(AppLoadingState::Loading),
-            TextFont::from_font_size(DEFAULT_TEXT_SIZE),
+            FontType::default_text_font(),
             &mut commands,
         );
     }
@@ -58,20 +84,48 @@ fn on_spawn_loading_text(mut messages: MessageReader<SpawnLoadingText>, mut comm
 
 fn on_spawn_text(
     mut messages: MessageReader<SpawnText>,
-    fonts: Res<FontsAsssets>,
+    font_assets: Res<FontsAsssets>,
     mut commands: Commands,
 ) {
     for message in messages.read() {
-        const SIZE: f32 = 48.0;
-        let font: TextFont = match message.font {
-            FontType::Default => TextFont::from_font_size(SIZE),
-            FontType::Symbols => TextFont {
-                font: fonts.symbols.clone().into(),
-                font_size: FontSize::Px(SIZE),
-                ..default()
-            },
-        };
-        spawn_fullscreen_text(&message.text, message.state, font, &mut commands);
+        spawn_fullscreen_text(
+            &message.text,
+            message.state,
+            message.font.to_text_font(&font_assets),
+            &mut commands,
+        );
+    }
+}
+
+fn on_spawn_menu(
+    mut messages: MessageReader<SpawnMenu>,
+    font_assets: Res<FontsAsssets>,
+    mut commands: Commands,
+) {
+    for message in messages.read() {
+        let root = spawn_fullscreen_text(
+            &message.text,
+            message.state,
+            message.font.to_text_font(&font_assets),
+            &mut commands,
+        );
+        commands.entity(root).with_children(|parent| {
+            parent.spawn((
+                ui_widgets::Button,
+                Node {
+                    padding: UiRect::axes(px(24), px(12)),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
+                children![(
+                    Text::new("Continue"),
+                    TextFont::default(),
+                    TextColor(Color::WHITE),
+                )],
+            ));
+        });
     }
 }
 
@@ -80,11 +134,13 @@ fn spawn_fullscreen_text<S: States>(
     state: Option<S>,
     font: TextFont,
     commands: &mut Commands,
-) {
+) -> Entity {
     let mut entity = commands.spawn((
         Node {
             width: percent(100),
             height: percent(100),
+            flex_direction: FlexDirection::Column,
+            row_gap: px(20),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             ..default()
@@ -101,4 +157,5 @@ fn spawn_fullscreen_text<S: States>(
     if let Some(state) = state {
         entity.insert(DespawnOnExit(state));
     }
+    entity.id()
 }

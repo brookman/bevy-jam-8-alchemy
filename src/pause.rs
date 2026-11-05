@@ -1,21 +1,12 @@
 use crate::input::TogglePause;
 use crate::loading::AppLoadingState;
-use crate::ui::{FontType, SpawnText};
+use crate::ui::{FontType, SpawnMenu};
 use bevy::prelude::*;
 use bevy_enhanced_input::prelude::Start;
 
 pub fn plugin(app: &mut App) {
     app.add_sub_state::<PauseState>()
-        .add_systems(
-            OnEnter(PauseState::Paused),
-            (pause_time, |mut writer: MessageWriter<SpawnText>| {
-                writer.write(SpawnText {
-                    text: "Paused\n🜁🜂🜃🜄🜅🜆🜇🜈🜉🜊🜋🜌🜍🜎🜏".to_string(),
-                    font: FontType::Symbols,
-                    state: Some(PauseState::Paused),
-                });
-            }),
-        )
+        .add_systems(OnEnter(PauseState::Paused), (pause_time, spawn_pause_menu))
         .add_systems(OnExit(PauseState::Paused), resume_time)
         .add_observer(toggle_pause);
 }
@@ -26,8 +17,16 @@ pub fn plugin(app: &mut App) {
 #[source(AppLoadingState = AppLoadingState::Loaded)]
 pub enum PauseState {
     #[default]
-    Running,
     Paused,
+    Running,
+}
+
+fn spawn_pause_menu(mut writer: MessageWriter<SpawnMenu>) {
+    writer.write(SpawnMenu {
+        text: "🜋 P🜁🜰S🝗D 🜋".to_uppercase(),
+        font: FontType::Symbols,
+        state: Some(PauseState::Paused),
+    });
 }
 
 fn toggle_pause(
