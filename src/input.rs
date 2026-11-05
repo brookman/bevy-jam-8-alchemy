@@ -1,9 +1,10 @@
 use crate::pause::PauseState;
 use bevy::prelude::*;
 use bevy_enhanced_input::prelude::*;
+use bevy_fix_cursor_unlock_web::FixPointerUnlockPlugin;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins(EnhancedInputPlugin)
+    app.add_plugins((EnhancedInputPlugin, FixPointerUnlockPlugin))
         .add_input_context::<Global>()
         .add_input_context::<InGame>()
         .init_resource::<KeyboardCaptured>()

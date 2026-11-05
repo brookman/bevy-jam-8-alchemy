@@ -4,7 +4,6 @@ use bevy_framepace::FramepacePlugin;
 
 mod ahoy_debug;
 mod camera;
-mod input;
 mod player;
 mod scene;
 mod stable_ground;
@@ -15,7 +14,6 @@ pub fn plugin(app: &mut App) {
         FramepacePlugin,
         //MipmapGeneratorPlugin,
         scene::plugin,
-        input::plugin,
         camera::plugin,
         player::plugin,
         stable_ground::plugin,

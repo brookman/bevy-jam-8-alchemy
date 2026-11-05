@@ -1,4 +1,3 @@
-use crate::ahoy::input::PlayerInput;
 use crate::ahoy::stable_ground::StableGround;
 use crate::input::InGame;
 use crate::loading::AppLoadingState;
@@ -29,7 +28,6 @@ fn spawn_player(mut commands: Commands) {
         Mass(90.0)
         StableGround::default()
 
-        PlayerInput
         InGame
         Actions<InGame> [
             Action::<Jump>::new()

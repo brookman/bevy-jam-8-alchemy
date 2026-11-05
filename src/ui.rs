@@ -110,23 +110,29 @@ fn on_spawn_menu(
             &mut commands,
         );
         commands.entity(root).with_children(|parent| {
-            parent.spawn((
-                ui_widgets::Button,
-                Node {
-                    padding: UiRect::axes(px(24), px(12)),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
-                children![(
-                    Text::new("Continue"),
-                    TextFont::default(),
-                    TextColor(Color::WHITE),
-                )],
-            ));
+            parent
+                .spawn((
+                    ui_widgets::Button,
+                    Node {
+                        padding: UiRect::axes(px(24), px(12)),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
+                    children![(
+                        Text::new("Continue"),
+                        TextFont::default(),
+                        TextColor(Color::WHITE),
+                    )],
+                ))
+                .observe(on_press_continue);
         });
     }
+}
+
+fn on_press_continue(_: On<ui_widgets::Activate>, mut next: ResMut<NextState<PauseState>>) {
+    next.set(PauseState::Running);
 }
 
 fn spawn_fullscreen_text<S: States>(
