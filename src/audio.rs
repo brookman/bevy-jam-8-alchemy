@@ -1,6 +1,6 @@
 //! Uses Bevy's built-in audio until `bevy_seedling` supports Bevy 0.20.
 
-use crate::loading::{AppState, LoadCollection};
+use crate::loading::{AppLoadingState, LoadCollection};
 use crate::physics::Ball;
 use avian3d::prelude::{Collisions, ComputedMass, PhysicsSchedule, PhysicsStepSystems};
 use bevy::audio::Volume;
@@ -17,7 +17,7 @@ pub fn plugin(app: &mut App) {
         PhysicsSchedule,
         play_impacts
             .in_set(PhysicsStepSystems::Last)
-            .run_if(in_state(AppState::Running)),
+            .run_if(in_state(AppLoadingState::Loaded)),
     );
 }
 

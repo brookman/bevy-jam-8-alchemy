@@ -1,43 +1,37 @@
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 
+use crate::ui::SpawnLoadingText;
+
 pub fn plugin(app: &mut App) {
-    app.init_state::<AppState>()
-        .add_loading_state(
-            LoadingState::new(AppState::Loading)
-                .continue_to_state(AppState::Running)
-                .on_failure_continue_to_state(AppState::LoadFailed),
-        )
-        .add_systems(
-            OnEnter(AppState::Loading),
-            |commands: Commands, asset_server: Res<AssetServer>| {
-                spawn_message(
-                    commands,
-                    asset_server,
-                    "Loading...\n🜁🜂🜃🜄🜅🜆🜇🜈🜉🜊🜋🜌🜍🜎🜏",
-                    AppState::Loading,
-                );
-            },
-        )
-        .add_systems(
-            OnEnter(AppState::LoadFailed),
-            |commands: Commands, asset_server: Res<AssetServer>| {
-                spawn_message(
-                    commands,
-                    asset_server,
-                    "Failed to load assets, see log",
-                    AppState::LoadFailed,
-                );
-            },
-        );
+    let config = LoadingState::new(AppLoadingState::Loading)
+        .continue_to_state(AppLoadingState::Loaded)
+        .on_failure_continue_to_state(AppLoadingState::Failed);
+
+    app.init_state::<AppLoadingState>()
+        .add_loading_state(config)
+        .add_systems(OnEnter(AppLoadingState::Loading), spawn_loading_text)
+        .add_systems(OnEnter(AppLoadingState::Failed), spawn_failed_text);
 }
 
 #[derive(States, Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum AppState {
+pub enum AppLoadingState {
     #[default]
     Loading,
-    Running,
-    LoadFailed,
+    Loaded,
+    Failed,
+}
+
+fn spawn_loading_text(mut writer: MessageWriter<SpawnLoadingText>) {
+    writer.write(SpawnLoadingText {
+        text: "Loading...".to_string(),
+    });
+}
+
+fn spawn_failed_text(mut writer: MessageWriter<SpawnLoadingText>) {
+    writer.write(SpawnLoadingText {
+        text: "Failed to load assets, see log".to_string(),
+    });
 }
 
 pub trait LoadCollection {
@@ -47,38 +41,7 @@ pub trait LoadCollection {
 impl LoadCollection for App {
     fn load_collection<A: AssetCollection>(self: &mut Self) -> &mut Self {
         self.configure_loading_state(
-            LoadingStateConfig::new(AppState::Loading).load_collection::<A>(),
+            LoadingStateConfig::new(AppLoadingState::Loading).load_collection::<A>(),
         )
     }
-}
-
-pub fn spawn_message<S: States>(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    text: &'static str,
-    state: S,
-) {
-    commands.spawn((
-        Name::new(text),
-        DespawnOnExit(state),
-        Node {
-            width: percent(100),
-            height: percent(100),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..default()
-        },
-        Pickable::IGNORE,
-        children![(
-            Text::new(text.to_uppercase()),
-            TextFont {
-                font: asset_server
-                    .load("fonts/NotoSansSymbols-VariableFont_wght.ttf")
-                    .into(),
-                font_size: FontSize::Px(48.0),
-                ..default()
-            },
-            Pickable::IGNORE,
-        )],
-    ));
 }

@@ -1,7 +1,7 @@
 use crate::ahoy::input::PlayerInput;
 use crate::ahoy::stable_ground::StableGround;
 use crate::input::InGame;
-use crate::loading::AppState;
+use crate::loading::AppLoadingState;
 use crate::physics::collider::CollisionLayer;
 use avian3d::prelude::*;
 use bevy::prelude::*;
@@ -9,7 +9,7 @@ use bevy_ahoy::prelude::*;
 use bevy_enhanced_input::prelude::*;
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(AppState::Running), spawn_player);
+    app.add_systems(OnEnter(AppLoadingState::Loaded), spawn_player);
 }
 
 fn spawn_player(mut commands: Commands) {

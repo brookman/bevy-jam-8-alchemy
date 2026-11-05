@@ -1,11 +1,21 @@
 use crate::input::TogglePause;
-use crate::loading::{AppState, spawn_message};
+use crate::loading::AppLoadingState;
+use crate::ui::{FontType, SpawnText};
 use bevy::prelude::*;
 use bevy_enhanced_input::prelude::Start;
 
 pub fn plugin(app: &mut App) {
     app.add_sub_state::<PauseState>()
-        .add_systems(OnEnter(PauseState::Paused), (pause_time, spawn_overlay))
+        .add_systems(
+            OnEnter(PauseState::Paused),
+            (pause_time, |mut writer: MessageWriter<SpawnText>| {
+                writer.write(SpawnText {
+                    text: "Paused\n🜁🜂🜃🜄🜅🜆🜇🜈🜉🜊🜋🜌🜍🜎🜏".to_string(),
+                    font: FontType::Symbols,
+                    state: Some(PauseState::Paused),
+                });
+            }),
+        )
         .add_systems(OnExit(PauseState::Paused), resume_time)
         .add_observer(toggle_pause);
 }
@@ -13,7 +23,7 @@ pub fn plugin(app: &mut App) {
 /// Pausing also stops `Time<Virtual>`, which freezes fixed-timestep systems
 /// (physics) and game-time timers. Only exists while running
 #[derive(SubStates, Default, Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[source(AppState = AppState::Running)]
+#[source(AppLoadingState = AppLoadingState::Loaded)]
 pub enum PauseState {
     #[default]
     Running,
@@ -41,8 +51,4 @@ fn pause_time(mut time: ResMut<Time<Virtual>>) {
 
 fn resume_time(mut time: ResMut<Time<Virtual>>) {
     time.unpause();
-}
-
-fn spawn_overlay(commands: Commands, asset_server: Res<AssetServer>) {
-    spawn_message(commands, asset_server, "Paused", PauseState::Paused);
 }

@@ -1,4 +1,4 @@
-use crate::loading::AppState;
+use crate::loading::AppLoadingState;
 use crate::physics::damping::AdaptiveAngularDamping;
 pub(crate) use crate::physics::layer::CollisionLayer;
 use avian3d::prelude::*;
@@ -9,7 +9,7 @@ pub fn plugin(app: &mut App) {
         PostUpdate,
         (setup_obstacles, setup_props)
             .after(TransformSystems::Propagate)
-            .run_if(in_state(AppState::Running)),
+            .run_if(in_state(AppLoadingState::Loaded)),
     );
 }
 

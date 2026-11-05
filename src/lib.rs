@@ -13,6 +13,7 @@ mod pause;
 mod physics;
 mod scene;
 mod skein;
+mod ui;
 
 use bevy::app::PluginGroupBuilder;
 use bevy::asset::AssetMode;
@@ -59,6 +60,7 @@ pub fn plugin(app: &mut App) {
 
     app.add_plugins((
         loading::plugin, // must be first
+        ui::plugin,
         audio::plugin,
         //camera::plugin,
         grayscale::plugin,

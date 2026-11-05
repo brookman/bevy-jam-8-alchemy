@@ -1,4 +1,4 @@
-use crate::loading::{AppState, LoadCollection};
+use crate::loading::{AppLoadingState, LoadCollection};
 use bevy::picking::hover::Hovered;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
@@ -14,7 +14,7 @@ pub fn plugin(app: &mut App) {
         })
         .load_collection::<CubeAssets>()
         .add_systems(Startup, spawn_light)
-        .add_systems(OnEnter(AppState::Running), spawn_cube)
+        .add_systems(OnEnter(AppLoadingState::Loaded), spawn_cube)
         .register_type::<EmissiveOnHover>()
         .add_observer(setup_emissive_on_hover)
         .add_systems(

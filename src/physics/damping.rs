@@ -1,9 +1,12 @@
-use crate::loading::AppState;
+use crate::loading::AppLoadingState;
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(Update, update_damping.run_if(in_state(AppState::Running)));
+    app.add_systems(
+        Update,
+        update_damping.run_if(in_state(AppLoadingState::Loaded)),
+    );
 }
 
 #[derive(Component, Reflect, Debug, Default)]

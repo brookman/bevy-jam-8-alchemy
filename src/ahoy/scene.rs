@@ -1,4 +1,4 @@
-use crate::loading::{AppState, LoadCollection};
+use crate::loading::{AppLoadingState, LoadCollection};
 use bevy::light::atmosphere::ScatteringMedium;
 use bevy::light::light_consts::lux;
 use bevy::light::{Atmosphere, CascadeShadowConfigBuilder, DirectionalLightShadowMap};
@@ -13,7 +13,7 @@ pub fn plugin(app: &mut App) {
         .insert_resource(DirectionalLightShadowMap { size: 4096 })
         .insert_resource(GlobalAmbientLight::NONE)
         .add_systems(
-            OnEnter(AppState::Running),
+            OnEnter(AppLoadingState::Loaded),
             (spawn_scene, spawn_light, spawn_atmosphere, spawn_crosshair),
         )
         .add_systems(Update, turn_sun);

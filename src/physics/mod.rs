@@ -1,5 +1,5 @@
 use crate::input::ClearBalls;
-use crate::loading::{AppState, LoadCollection};
+use crate::loading::{AppLoadingState, LoadCollection};
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
@@ -20,8 +20,11 @@ pub fn plugin(app: &mut App) {
         PhysicsDebugPlugin,
     ))
     .load_collection::<BallAssets>()
-    .add_systems(OnEnter(AppState::Running), spawn_ball_prop)
-    .add_systems(Update, despawn_fallen.run_if(in_state(AppState::Running)))
+    .add_systems(OnEnter(AppLoadingState::Loaded), spawn_ball_prop)
+    .add_systems(
+        Update,
+        despawn_fallen.run_if(in_state(AppLoadingState::Loaded)),
+    )
     .add_observer(spawn_ball_components)
     .add_observer(clear_balls);
 }
