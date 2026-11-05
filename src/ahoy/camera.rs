@@ -62,16 +62,20 @@ fn spawn_camera(
             actor_filter: SpatialQueryFilter::from_mask(CollisionLayer::Player),
             obstacle_filter: SpatialQueryFilter::from_mask(CollisionLayer::Obstacle),
             hold: PickupHoldConfig {
+                distance_to_allow_holding: 2.0,
                 //preferred_distance: 1.0,
                 linear_velocity_easing: 0.0,
                 angular_velocity_easing: 0.0,
-                temporary_prop_mass: 0.1,
+                //temporary_prop_mass: 0.1,
                 min_distance: 0.6,
                 max_linear_speed: 100.0,
                 max_angular_speed: 100.0,
                 ..default()
             },
-            pull: PickupPullConfig { ..default() },
+            pull: PickupPullConfig {
+                impulse: 0.0,
+                ..default()
+            },
             throw: PickupThrowConfig {
                 cutoff_mass_for_slowdown: 50.0,
                 linear_speed_range: 0.0..=10.0,

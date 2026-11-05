@@ -8,6 +8,7 @@ use bevy_enhanced_input::prelude::Start;
 pub(crate) mod collider;
 mod damping;
 mod layer;
+mod potion;
 
 const DESPAWN_HEIGHT: f32 = -30.0;
 
@@ -16,6 +17,7 @@ pub fn plugin(app: &mut App) {
         PhysicsPlugins::default(),
         collider::plugin,
         damping::plugin,
+        potion::plugin,
         #[cfg(feature = "dev")]
         PhysicsDebugPlugin,
     ))
@@ -23,7 +25,7 @@ pub fn plugin(app: &mut App) {
     .add_systems(OnEnter(AppLoadingState::Loaded), spawn_ball_prop)
     .add_systems(
         Update,
-        despawn_fallen.run_if(in_state(AppLoadingState::Loaded)),
+        (despawn_fallen).run_if(in_state(AppLoadingState::Loaded)),
     )
     .add_observer(spawn_ball_components)
     .add_observer(clear_balls);
