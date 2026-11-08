@@ -1,4 +1,4 @@
-use crate::enemy::Enemy;
+use crate::enemy::{Enemy, NavPath};
 use crate::loading::AppLoadingState;
 use crate::physics::damping::AdaptiveAngularDamping;
 pub(crate) use crate::physics::layer::CollisionLayer;
@@ -114,10 +114,16 @@ fn setup_enemy(
         ));
 
         for ancestor in hierarchy_query.iter_ancestors(entity) {
-            info!("ancestor {:?}", ancestor);
             if let Ok(initial_transform) = initial_transforms.get(ancestor) {
-                info!("has initial_transform {:?}", initial_transform);
-                enemy.insert(initial_transform.0.clone());
+                enemy.insert((
+                    initial_transform.0.clone(),
+                    NavPath {
+                        initialized: false,
+                        current: initial_transform.0.clone().translation,
+                        next: vec![],
+                    },
+                ));
+                commands.entity(ancestor).remove::<InitialTransform>();
                 break;
             }
         }
