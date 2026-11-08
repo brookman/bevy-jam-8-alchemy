@@ -1,18 +1,22 @@
 use crate::loading::{AppLoadingState, LoadCollection};
 use crate::physics::collider::InitialTransform;
-use avian3d::prelude::*;
-use bevy::color::palettes::tailwind::CYAN_500;
+use avian_rerecast::AvianBackendPlugin;
 use bevy::prelude::*;
-use bevy::time::common_conditions::on_timer;
 use bevy_asset_loader::prelude::*;
-use std::f32::consts::TAU;
+use bevy_landmass::{AgentDesiredVelocity3d, AgentTarget3d, Landmass3dPlugin};
+use bevy_rerecast::NavmeshPlugins;
+use landmass_rerecast::LandmassRerecastPlugin;
 use std::time::Duration;
-use vleue_navigator::prelude::*;
+//use vleue_navigator::prelude::*;
 
 pub fn plugin(app: &mut App) {
     app.add_plugins((
-        VleueNavigatorPlugin,
-        NavmeshUpdaterPlugin::<Collider, NavObstacle>::default(),
+        // VleueNavigatorPlugin,
+        // NavmeshUpdaterPlugin::<Collider, NavObstacle>::default(),
+        NavmeshPlugins::default(),
+        AvianBackendPlugin::default(),
+        Landmass3dPlugin::default(),
+        LandmassRerecastPlugin::default(),
     ))
     .load_collection::<EnemyAssets>()
     .add_systems(OnEnter(AppLoadingState::Loaded), init)
@@ -21,16 +25,17 @@ pub fn plugin(app: &mut App) {
         (
             init_nav_mesh,
             spawn_enemy,
-            update_enemy_path.run_if(on_timer(Duration::from_secs_f32(0.2))),
+            //update_enemy_path.run_if(on_timer(Duration::from_secs_f32(0.2))),
             move_enemy,
         )
             .chain()
             .run_if(in_state(AppLoadingState::Loaded)),
     )
-    .add_systems(
-        Update,
-        view_navmesh.run_if(on_timer(Duration::from_secs_f32(1.0))),
-    );
+    // .add_systems(
+    //     Update,
+    //     view_navmesh.run_if(on_timer(Duration::from_secs_f32(1.0))),
+    // )
+    ;
 }
 
 #[derive(AssetCollection, Resource)]
@@ -74,12 +79,12 @@ pub struct NavObstacle;
 #[type_path = "game"]
 pub struct NavTarget;
 
-#[derive(Component)]
-pub struct NavPath {
-    pub initialized: bool,
-    pub current: Vec3,
-    pub next: Vec<Vec3>,
-}
+// #[derive(Component)]
+// pub struct NavPath {
+//     pub initialized: bool,
+//     pub current: Vec3,
+//     pub next: Vec<Vec3>,
+// }
 
 fn init(mut commands: Commands) {
     commands.spawn(());
@@ -104,24 +109,24 @@ fn init_nav_mesh(
                 continue;
             };
 
-            let Some(nav_mesh) = NavMesh::from_bevy_mesh(mesh) else {
-                continue;
-            };
+            // let Some(nav_mesh) = NavMesh::from_bevy_mesh(mesh) else {
+            //     continue;
+            // };
 
-            commands.entity(child).insert((
-                ManagedNavMesh::from_id(0),
-                NavMeshSettings {
-                    fixed: Triangulation::from_mesh(nav_mesh.get().as_ref(), 0),
-                    build_timeout: Some(5.0),
-                    upward_shift: 0.5,
-                    //merge_steps: 2,
-                    agent_radius: 0.15,
-                    //agent_radius_on_outer_edge: true,
-                    ..default()
-                },
-                NavMeshUpdateMode::Direct,
-                Transform::from_rotation(Quat::from_axis_angle(Vec3::X, TAU * 0.25)),
-            ));
+            // commands.entity(child).insert((
+            //     ManagedNavMesh::from_id(0),
+            //     NavMeshSettings {
+            //         fixed: Triangulation::from_mesh(nav_mesh.get().as_ref(), 0),
+            //         build_timeout: Some(5.0),
+            //         upward_shift: 0.5,
+            //         merge_steps: 2,
+            //         agent_radius: 0.2,
+            //         //agent_radius_on_outer_edge: true,
+            //         ..default()
+            //     },
+            //     NavMeshUpdateMode::Direct,
+            //     Transform::from_rotation(Quat::from_axis_angle(Vec3::X, TAU * 0.25)),
+            // ));
         }
         commands.entity(entity).remove::<NavMeshMarker>();
     }
@@ -144,89 +149,105 @@ fn spawn_enemy(
     }
 }
 
-fn update_enemy_path(
-    mut enemy: Query<(&Transform, &mut NavPath)>,
-    target: Query<&Transform, With<NavTarget>>,
-    navmeshes: Res<Assets<NavMesh>>,
-    navmesh: Query<&ManagedNavMesh>,
-    //mut gizmos: Gizmos,
-) {
-    for (transform, mut path) in &mut enemy {
-        let navmesh = navmeshes.get(navmesh.single().unwrap()).unwrap();
-        let target = target.single().unwrap().translation;
-        //gizmos.sphere(target, 0.15, PURPLE);
+// fn update_enemy_path(
+//     mut enemy: Query<(&Transform, &mut NavPath)>,
+//     target: Query<&Transform, With<NavTarget>>,
+//     navmeshes: Res<Assets<NavMesh>>,
+//     navmesh: Query<&ManagedNavMesh>,
+//     //mut gizmos: Gizmos,
+// ) {
+//     for (transform, mut path) in &mut enemy {
+//         let navmesh = navmeshes.get(navmesh.single().unwrap()).unwrap();
+//         let target = target.single().unwrap().translation;
+//
+//         let Some(new_path) = navmesh.transformed_path(transform.translation, target) else {
+//             break;
+//         };
+//
+//         if let Some((first, remaining)) = new_path.path.split_first() {
+//             let mut remaining = remaining.to_vec();
+//             remaining.reverse();
+//             *path = NavPath {
+//                 initialized: true,
+//                 current: *first,
+//                 next: remaining,
+//             };
+//         }
+//     }
+// }
 
-        let Some(new_path) = navmesh.transformed_path(transform.translation, target) else {
-            break;
-        };
-
-        // if !new_path.path.is_empty() {
-        //     gizmos.arrow(
-        //         transform.translation + Vec3::Y * 0.2,
-        //         new_path.path[0] + Vec3::Y * 0.2,
-        //         PURPLE,
-        //     );
-        // }
-        // for i in 0..new_path.path.len() - 1 {
-        //     gizmos.arrow(
-        //         new_path.path[i] + Vec3::Y * 0.2,
-        //         new_path.path[i + 1] + Vec3::Y * 0.2,
-        //         PURPLE,
-        //     );
-        // }
-
-        if let Some((first, remaining)) = new_path.path.split_first() {
-            let mut remaining = remaining.to_vec();
-            remaining.reverse();
-            *path = NavPath {
-                initialized: true,
-                current: *first,
-                next: remaining,
-            };
-        }
-    }
-}
+// fn move_enemy(
+//     mut commands: Commands,
+//     mut object_query: Query<(&mut Transform, &mut NavPath, Entity)>,
+//     time: Res<Time>,
+// ) {
+//     for (mut transform, mut path, entity) in object_query.iter_mut() {
+//         if !path.initialized {
+//             continue;
+//         }
+//         if transform.translation.distance(path.current) >= 0.1 {
+//             let move_direction = path.current - transform.translation;
+//             transform.translation += move_direction.normalize() * time.delta_secs() * 3.0;
+//         } else {
+//             if let Some(next) = path.next.pop() {
+//                 path.current = next;
+//             } else {
+//                 commands.entity(entity).remove::<NavPath>();
+//                 // let target_entity = object.0.take().unwrap();
+//                 // commands.entity(target_entity).despawn();
+//             }
+//         }
+//     }
+// }
 
 fn move_enemy(
     mut commands: Commands,
-    mut object_query: Query<(&mut Transform, &mut NavPath, Entity)>,
+    mut object_query: Query<(
+        &mut Transform,
+        &AgentTarget3d,
+        &AgentDesiredVelocity3d,
+        Entity,
+    )>,
     time: Res<Time>,
 ) {
-    for (mut transform, mut path, entity) in object_query.iter_mut() {
-        if !path.initialized {
-            continue;
-        }
-        if transform.translation.distance(path.current) >= 0.1 {
-            let move_direction = path.current - transform.translation;
-            transform.translation += move_direction.normalize() * time.delta_secs() * 3.0;
-        } else {
-            if let Some(next) = path.next.pop() {
-                path.current = next;
-            } else {
-                commands.entity(entity).remove::<NavPath>();
-                // let target_entity = object.0.take().unwrap();
-                // commands.entity(target_entity).despawn();
-            }
-        }
+    for (mut transform, target, desired_velocity, entity) in object_query.iter_mut() {
+        let vel = desired_velocity.velocity();
+
+        info!("desired_velocity {:?}", desired_velocity);
+
+        transform.translation += vel * time.delta_secs();
+
+        // if transform.translation.distance(target.) >= 0.1 {
+        //     let move_direction = path.current - transform.translation;
+        //     transform.translation += move_direction.normalize() * time.delta_secs() * 3.0;
+        // } else {
+        //     if let Some(next) = path.next.pop() {
+        //         path.current = next;
+        //     } else {
+        //         commands.entity(entity).remove::<NavPath>();
+        //         // let target_entity = object.0.take().unwrap();
+        //         // commands.entity(target_entity).despawn();
+        //     }
+        // }
     }
 }
 
-fn view_navmesh(
-    mut commands: Commands,
-    navmeshes: Query<Entity, With<ManagedNavMesh>>,
-    mut current: Local<usize>,
-) {
-    if navmeshes.iter().len() == 0 {
-        info!("no nav meshes");
-        return;
-    }
-    for (i, entity) in navmeshes.iter().sort::<Entity>().enumerate() {
-        commands.entity(entity).remove::<NavMeshDebug>();
-        if i == *current {
-            commands
-                .entity(entity)
-                .insert(NavMeshDebug(CYAN_500.into()));
-        }
-    }
-    *current = (*current + 1) % navmeshes.iter().len();
-}
+// fn view_navmesh(
+//     mut commands: Commands,
+//     navmeshes: Query<Entity, With<ManagedNavMesh>>,
+//     mut current: Local<usize>,
+// ) {
+//     if navmeshes.iter().len() == 0 {
+//         info!("no nav meshes");
+//         return;
+//     }
+//     for (i, entity) in navmeshes.iter().sort::<Entity>().enumerate() {
+//         commands.entity(entity).remove::<NavMeshDebug>();
+//         if i == *current {
+//             commands
+//                 .entity(entity)
+//                 .insert(NavMeshDebug(CYAN_500.into()));
+//         }
+//     }
+//     *current = (*current + 1) % navmeshes.iter().len();
+// }

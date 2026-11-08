@@ -1,9 +1,12 @@
-use crate::enemy::{Enemy, NavPath};
+use crate::enemy::{Enemy, NavTarget};
 use crate::loading::AppLoadingState;
 use crate::physics::damping::AdaptiveAngularDamping;
 pub(crate) use crate::physics::layer::CollisionLayer;
 use avian3d::prelude::*;
 use bevy::prelude::*;
+use bevy_landmass::{
+    Agent, Agent3dBundle, AgentSettings, AgentTarget3d, Archipelago3d, ArchipelagoRef3d,
+};
 
 pub fn plugin(app: &mut App) {
     app.add_systems(
@@ -32,6 +35,7 @@ enum ColliderShape {
     Sphere { radius: f32 },
     Cylinder { radius: f32, length: f32 },
     Cone { radius: f32, length: f32 },
+    Capsule { radius: f32, length: f32 },
 }
 
 impl Default for ColliderShape {
@@ -51,6 +55,7 @@ impl ColliderShape {
             ColliderShape::Sphere { radius } => Collider::sphere(*radius),
             ColliderShape::Cylinder { radius, length } => Collider::cylinder(*radius, *length),
             ColliderShape::Cone { radius, length } => Collider::cone(*radius, *length),
+            ColliderShape::Capsule { radius, length } => Collider::capsule(*radius, *length),
         }
     }
 }
@@ -102,7 +107,17 @@ fn setup_enemy(
     children: Query<&Children>,
     initial_transforms: Query<&InitialTransform>,
     hierarchy_query: Query<&ChildOf>,
+    archipelago3d: Query<Entity, With<Archipelago3d>>,
+    target: Query<&Transform, With<NavTarget>>,
 ) {
+    let Ok(archipelago) = archipelago3d.single() else {
+        return;
+    };
+
+    let Ok(target) = target.single() else {
+        return;
+    };
+
     for (entity, body_transform) in &bodies {
         let mut enemy = commands.entity(entity);
 
@@ -111,18 +126,26 @@ fn setup_enemy(
             CollisionLayer::Npc.get_collision_layers(),
             build_compound_collider(entity, body_transform, colliders, children),
             ColliderDensity(300.0),
+            LockedAxes::new().lock_rotation_x().lock_rotation_z(),
         ));
 
         for ancestor in hierarchy_query.iter_ancestors(entity) {
             if let Ok(initial_transform) = initial_transforms.get(ancestor) {
                 enemy.insert((
                     initial_transform.0.clone(),
-                    NavPath {
-                        initialized: false,
-                        current: initial_transform.0.clone().translation,
-                        next: vec![],
+                    Name::new("EnemyAgent"),
+                    Agent3dBundle {
+                        agent: Agent::default(),
+                        archipelago_ref: ArchipelagoRef3d::new(archipelago),
+                        settings: AgentSettings {
+                            desired_speed: 2.0,
+                            max_speed: 3.0,
+                            radius: 0.15,
+                        },
                     },
+                    AgentTarget3d::Point(target.translation),
                 ));
+
                 commands.entity(ancestor).remove::<InitialTransform>();
                 break;
             }

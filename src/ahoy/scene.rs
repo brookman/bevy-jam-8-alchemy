@@ -6,6 +6,12 @@ use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 #[cfg(feature = "dev")]
 use bevy_inspector_egui::prelude::*;
+use bevy_landmass::{
+    Agent, Agent3dBundle, AgentSettings, AgentTarget3d, Archipelago3d, ArchipelagoOptions,
+    ArchipelagoRef3d, FromAgentRadius, Island, PointSampleDistance3d,
+};
+use bevy_rerecast::Navmesh;
+use landmass_rerecast::{Island3dBundle, NavMeshHandle3d};
 use std::f32::consts::TAU;
 
 pub fn plugin(app: &mut App) {
@@ -20,11 +26,11 @@ pub fn plugin(app: &mut App) {
 }
 
 #[derive(AssetCollection, Resource)]
-struct SceneAssets {
-    #[asset(path = "maps/new_playground.blend#Scene0")]
-    playground: Handle<WorldAsset>,
+pub struct SceneAssets {
     #[asset(path = "models/alchemy.blend#Scene0")]
-    table: Handle<WorldAsset>,
+    alchemy_scene: Handle<WorldAsset>,
+    #[asset(path = "models/alchemy.nav")]
+    alchemy_navmesh: Handle<Navmesh>,
     #[asset(path = "sprites/crosshair.png")]
     crosshair_texture: Handle<Image>,
 }
@@ -48,7 +54,30 @@ fn spawn_scene(mut commands: Commands, assets: Res<SceneAssets>) {
     commands.spawn((
         Name::new("Scene"),
         MainScene,
-        WorldAssetRoot(assets.table.clone()),
+        WorldAssetRoot(assets.alchemy_scene.clone()),
+    ));
+
+    let archipelago = commands
+        .spawn((
+            Name::new("Archipelago"),
+            Archipelago3d::new(ArchipelagoOptions {
+                point_sample_distance: PointSampleDistance3d {
+                    distance_above: 0.5,
+                    distance_below: 0.5,
+                    ..PointSampleDistance3d::from_agent_radius(0.15)
+                },
+                ..ArchipelagoOptions::from_agent_radius(0.5)
+            }),
+        ))
+        .id();
+
+    commands.spawn((
+        Name::new("Island"),
+        Island3dBundle {
+            island: Island,
+            archipelago_ref: ArchipelagoRef3d::new(archipelago),
+            nav_mesh: NavMeshHandle3d(assets.alchemy_navmesh.clone()),
+        },
     ));
 }
 
