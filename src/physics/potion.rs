@@ -80,15 +80,12 @@ fn explode(
         forces[current_frame % 3] = total_impulse;
         let average = forces.iter().sum::<f32>() / 3.0;
 
-        info!("Impact: {:?}, average: {:?}", total_impulse, average);
         if average > CRITICAL_FORCE {
-            info!("Boom!");
             commands.entity(entity).despawn();
             continue;
         }
 
         if sleeping.get(entity).is_ok() {
-            info!("Sleeping");
             commands.entity(entity).remove::<ExplodeOnImpact>();
         }
     }

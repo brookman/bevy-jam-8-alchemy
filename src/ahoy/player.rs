@@ -1,6 +1,5 @@
 use crate::ahoy::stable_ground::StableGround;
 use crate::input::InGame;
-use crate::loading::AppLoadingState;
 use crate::physics::collider::CollisionLayer;
 use avian3d::prelude::*;
 use bevy::prelude::*;
@@ -8,20 +7,38 @@ use bevy_ahoy::prelude::*;
 use bevy_enhanced_input::prelude::*;
 
 pub fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(AppLoadingState::Loaded), spawn_player);
+    app.add_observer(spawn_player);
 }
 
-fn spawn_player(mut commands: Commands) {
+#[derive(Component, Reflect, Debug, Default)]
+#[reflect(Component, Default)]
+#[type_path = "game"]
+pub struct PlayerSpawner {}
+
+fn spawn_player(
+    _: On<Add<PlayerSpawner>>,
+    player_spawner: Query<&Transform, With<PlayerSpawner>>,
+    mut commands: Commands,
+) {
     let controller = CharacterController {
         filter: SpatialQueryFilter::from_mask(CollisionLayer::Obstacle),
         speed: 6.0,
         jump_height: 0.75,
         ..default()
     };
+
+    const PLAYER_HEIGHT: f32 = 1.8;
+
+    let transform = if let Ok(t) = player_spawner.single() {
+        t.with_translation(t.translation + Vec3::new(0.0, PLAYER_HEIGHT, 0.0))
+    } else {
+        Transform::default()
+    };
+
     commands.spawn_scene(bsn! {
         # Player
-        Transform::from_xyz(0.0, 20.0, 0.0)
-        Collider::cylinder(0.35, 1.8)
+        transform
+        Collider::cylinder(0.35, PLAYER_HEIGHT)
         //CollisionLayers::new(CollisionLayer::Player, CollisionLayer::Obstacle)
         controller
         RigidBody::Kinematic

@@ -1,3 +1,4 @@
+use crate::enemy::Enemy;
 use crate::loading::AppLoadingState;
 use crate::physics::damping::AdaptiveAngularDamping;
 pub(crate) use crate::physics::layer::CollisionLayer;
@@ -7,7 +8,7 @@ use bevy::prelude::*;
 pub fn plugin(app: &mut App) {
     app.add_systems(
         PostUpdate,
-        (setup_obstacles, setup_props)
+        (setup_obstacles, setup_props, setup_enemy)
             .after(TransformSystems::Propagate)
             .run_if(in_state(AppLoadingState::Loaded)),
     );
@@ -54,6 +55,11 @@ impl ColliderShape {
     }
 }
 
+#[derive(Component, Reflect, Debug, Default)]
+#[reflect(Component, Default)]
+#[type_path = "game"]
+pub struct InitialTransform(pub Transform);
+
 fn setup_obstacles(
     mut commands: Commands,
     bodies: Query<(Entity, &GlobalTransform), (With<Obstacle>, Without<RigidBody>)>,
@@ -63,10 +69,7 @@ fn setup_obstacles(
     for (entity, body_transform) in &bodies {
         commands.entity(entity).insert((
             RigidBody::Static,
-            CollisionLayers::new(
-                CollisionLayer::Obstacle,
-                [CollisionLayer::Player, CollisionLayer::Prop],
-            ),
+            CollisionLayer::Obstacle.get_collision_layers(),
             build_compound_collider(entity, body_transform, colliders, children),
         ));
     }
@@ -81,10 +84,7 @@ fn setup_props(
     for (entity, body_transform) in &bodies {
         commands.entity(entity).insert((
             RigidBody::Dynamic,
-            CollisionLayers::new(
-                CollisionLayer::Prop,
-                [CollisionLayer::Obstacle, CollisionLayer::Prop],
-            ),
+            CollisionLayer::Prop.get_collision_layers(),
             build_compound_collider(entity, body_transform, colliders, children),
             ColliderDensity(300.0),
             AdaptiveAngularDamping {
@@ -92,6 +92,35 @@ fn setup_props(
                 colliding: 0.5,
             },
         ));
+    }
+}
+
+fn setup_enemy(
+    mut commands: Commands,
+    bodies: Query<(Entity, &GlobalTransform), (With<Enemy>, Without<RigidBody>)>,
+    colliders: Query<(&GlobalTransform, &ColliderShape)>,
+    children: Query<&Children>,
+    initial_transforms: Query<&InitialTransform>,
+    hierarchy_query: Query<&ChildOf>,
+) {
+    for (entity, body_transform) in &bodies {
+        let mut enemy = commands.entity(entity);
+
+        enemy.insert((
+            RigidBody::Dynamic,
+            CollisionLayer::Npc.get_collision_layers(),
+            build_compound_collider(entity, body_transform, colliders, children),
+            ColliderDensity(300.0),
+        ));
+
+        for ancestor in hierarchy_query.iter_ancestors(entity) {
+            info!("ancestor {:?}", ancestor);
+            if let Ok(initial_transform) = initial_transforms.get(ancestor) {
+                info!("has initial_transform {:?}", initial_transform);
+                enemy.insert(initial_transform.0.clone());
+                break;
+            }
+        }
     }
 }
 

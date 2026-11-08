@@ -6,6 +6,7 @@ mod camera;
 mod config;
 #[cfg(feature = "dev")]
 mod debug;
+mod enemy;
 mod grayscale;
 mod input;
 mod loading;
@@ -66,6 +67,7 @@ pub fn plugin(app: &mut App) {
         grayscale::plugin,
         input::plugin,
         pause::plugin,
+        enemy::plugin,
         physics::plugin,
         scene::plugin,
         skein::plugin,

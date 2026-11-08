@@ -29,6 +29,11 @@ struct SceneAssets {
     crosshair_texture: Handle<Image>,
 }
 
+#[derive(Component, Reflect, Debug, Default)]
+#[reflect(Component, Default)]
+#[type_path = "game"]
+pub struct MainScene;
+
 fn spawn_scene(mut commands: Commands, assets: Res<SceneAssets>) {
     // commands.spawn((
     //     Name::new("Scene"),
@@ -41,8 +46,8 @@ fn spawn_scene(mut commands: Commands, assets: Res<SceneAssets>) {
     //         )),
     // ));
     commands.spawn((
-        Name::new("Table"),
-        Transform::from_xyz(0.0, 7.75, -3.0),
+        Name::new("Scene"),
+        MainScene,
         WorldAssetRoot(assets.table.clone()),
     ));
 }

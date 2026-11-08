@@ -12,9 +12,9 @@ pub fn plugin(app: &mut App) {
             brightness: 500.,
             ..default()
         })
-        .load_collection::<CubeAssets>()
+        // .load_collection::<CubeAssets>()
         .add_systems(Startup, spawn_light)
-        .add_systems(OnEnter(AppLoadingState::Loaded), spawn_cube)
+        // .add_systems(OnEnter(AppLoadingState::Loaded), spawn_cube)
         .register_type::<EmissiveOnHover>()
         .add_observer(setup_emissive_on_hover)
         .add_systems(
@@ -45,11 +45,11 @@ impl Default for SceneConfig {
     }
 }
 
-#[derive(AssetCollection, Resource)]
-struct CubeAssets {
-    #[asset(path = "models/demo.blend#Scene0")]
-    scene: Handle<WorldAsset>,
-}
+// #[derive(AssetCollection, Resource)]
+// struct CubeAssets {
+//     #[asset(path = "models/demo.blend#Scene0")]
+//     scene: Handle<WorldAsset>,
+// }
 
 #[derive(Component)]
 struct SceneLight;
@@ -75,12 +75,12 @@ fn spawn_light(mut commands: Commands) {
     ));
 }
 
-fn spawn_cube(mut commands: Commands, assets: Res<CubeAssets>) {
-    commands.spawn((
-        Name::new("Cube Scene"),
-        WorldAssetRoot(assets.scene.clone()),
-    ));
-}
+// fn spawn_cube(mut commands: Commands, assets: Res<CubeAssets>) {
+//     commands.spawn((
+//         Name::new("Cube Scene"),
+//         WorldAssetRoot(assets.scene.clone()),
+//     ));
+// }
 
 /// Makes a copy of the material
 fn setup_emissive_on_hover(

@@ -50,7 +50,7 @@ fn spawn_ball_prop(mut commands: Commands, assets: Res<BallAssets>) {
 }
 
 fn spawn_ball_components(ball: On<Add<Ball>>, mut commands: Commands) {
-    let position = Vec3::new(0.0, 20.0, -5.0);
+    let position = Vec3::new(0.0, 4.0, -2.0);
     commands.entity(ball.entity).insert((
         Transform::from_translation(position),
         //TransformInterpolation,
