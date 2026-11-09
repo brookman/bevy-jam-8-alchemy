@@ -40,6 +40,11 @@ pub struct Enemy;
 #[derive(Component, Reflect, Debug, Default)]
 #[reflect(Component, Default)]
 #[type_path = "game"]
+pub struct EnemyRoot;
+
+#[derive(Component, Reflect, Debug, Default)]
+#[reflect(Component, Default)]
+#[type_path = "game"]
 pub struct EnemyAgent;
 
 #[derive(Component, Reflect, Debug)]
@@ -137,6 +142,7 @@ fn spawn_enemy(
             commands.spawn((
                 WorldAssetRoot(assets.enemy.clone()),
                 InitialTransform(transform.clone()),
+                EnemyRoot
             ));
         }
     }

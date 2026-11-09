@@ -35,6 +35,8 @@ pub struct SceneAssets {
     pub crosshair_texture: Handle<Image>,
     #[asset(path = "models/alchemy.blend#Scene2")]
     pub potion_scene: Handle<WorldAsset>,
+    #[asset(path = "models/alchemy.blend#Scene3")]
+    pub explosion_scene: Handle<WorldAsset>,
 }
 
 #[derive(Component, Reflect, Debug, Default)]

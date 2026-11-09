@@ -9,6 +9,7 @@ pub(crate) mod collider;
 mod damping;
 mod layer;
 mod potion;
+mod explosion;
 
 const DESPAWN_HEIGHT: f32 = -30.0;
 
@@ -18,11 +19,12 @@ pub fn plugin(app: &mut App) {
         collider::plugin,
         damping::plugin,
         potion::plugin,
+        explosion::plugin,
         #[cfg(feature = "dev")]
         PhysicsDebugPlugin,
     ))
     .load_collection::<BallAssets>()
-    .add_systems(OnEnter(AppLoadingState::Loaded), spawn_ball_prop)
+    //.add_systems(OnEnter(AppLoadingState::Loaded), spawn_ball_prop)
     .add_systems(
         Update,
         (despawn_fallen).run_if(in_state(AppLoadingState::Loaded)),

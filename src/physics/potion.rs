@@ -1,6 +1,7 @@
 use crate::ahoy::scene::SceneAssets;
 use crate::loading::AppLoadingState;
 use crate::physics::collider::InitialTransform;
+use crate::physics::explosion::Explosion;
 use avian3d::prelude::{Collisions, ComputedMass, Sleeping};
 use bevy::app::{App, Update};
 use bevy::log::info;
@@ -94,7 +95,7 @@ fn prop_dropped(
 const CRITICAL_FORCE: f32 = 1.1;
 
 fn explode(
-    entities: Query<(Entity, &ComputedMass), With<ExplodeOnImpact>>,
+    entities: Query<(Entity, &ComputedMass, &GlobalTransform), With<ExplodeOnImpact>>,
     mut explode: Query<&mut ExplodeOnImpact>,
     collisions: Collisions,
     sleeping: Query<(), With<Sleeping>>,
@@ -104,7 +105,7 @@ fn explode(
     let current_frame = frame_counter.0;
     frame_counter.0 += 1;
 
-    for (entity, mass) in entities {
+    for (entity, mass, transform) in entities {
         let mut total_impulse = 0.0;
 
         for contact_pair in collisions.collisions_with(entity) {
@@ -116,6 +117,7 @@ fn explode(
         let average = forces.iter().sum::<f32>() / 3.0;
 
         if average > CRITICAL_FORCE {
+            commands.spawn(Explosion::new(transform.compute_transform(), 1.0));
             commands.entity(entity).despawn();
             continue;
         }
