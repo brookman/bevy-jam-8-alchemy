@@ -1,14 +1,17 @@
+use crate::ahoy::scene::SceneAssets;
 use crate::loading::AppLoadingState;
+use crate::physics::collider::InitialTransform;
 use avian3d::prelude::{Collisions, ComputedMass, Sleeping};
 use bevy::app::{App, Update};
 use bevy::log::info;
 use bevy::prelude::*;
 use bevy_ahoy::pickup::prelude::*;
+use std::time::Duration;
 
 pub fn plugin(app: &mut App) {
     app.insert_resource(FrameCounter(0)).add_systems(
         Update,
-        (prop_thrown, prop_dropped, explode).run_if(in_state(AppLoadingState::Loaded)),
+        (spawn_prop, prop_thrown, prop_dropped, explode).run_if(in_state(AppLoadingState::Loaded)),
     );
 }
 
@@ -23,6 +26,38 @@ struct FrameCounter(usize);
 #[derive(Component, Default)]
 struct ExplodeOnImpact {
     forces: [f32; 3],
+}
+
+#[derive(Component, Reflect, Debug)]
+#[reflect(Component, Default)]
+#[type_path = "game"]
+struct PotionSpawner {
+    spawn_timer: Timer,
+}
+
+impl Default for PotionSpawner {
+    fn default() -> Self {
+        Self {
+            spawn_timer: Timer::new(Duration::from_secs(5), TimerMode::Repeating),
+        }
+    }
+}
+
+fn spawn_prop(
+    spawners: Query<(&mut PotionSpawner, &GlobalTransform)>,
+    assets: Res<SceneAssets>,
+    time: Res<Time>,
+    mut commands: Commands,
+) {
+    for (mut spawner, transform) in spawners {
+        spawner.spawn_timer.tick(time.delta());
+        if spawner.spawn_timer.just_finished() {
+            commands.spawn((
+                WorldAssetRoot(assets.potion_scene.clone()),
+                InitialTransform(transform.clone().compute_transform()),
+            ));
+        }
+    }
 }
 
 fn prop_thrown(

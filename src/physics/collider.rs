@@ -85,9 +85,12 @@ fn setup_props(
     bodies: Query<(Entity, &GlobalTransform), (With<Prop>, Without<RigidBody>)>,
     colliders: Query<(&GlobalTransform, &ColliderShape)>,
     children: Query<&Children>,
+    initial_transforms: Query<&InitialTransform>,
+    hierarchy_query: Query<&ChildOf>,
 ) {
     for (entity, body_transform) in &bodies {
-        commands.entity(entity).insert((
+        let mut e = commands.entity(entity);
+        e.insert((
             RigidBody::Dynamic,
             CollisionLayer::Prop.get_collision_layers(),
             build_compound_collider(entity, body_transform, colliders, children),
@@ -97,6 +100,12 @@ fn setup_props(
                 colliding: 0.5,
             },
         ));
+
+        for ancestor in hierarchy_query.iter_ancestors(entity) {
+            if let Ok(initial_transform) = initial_transforms.get(ancestor) {
+                e.insert(initial_transform.0.clone());
+            }
+        }
     }
 }
 

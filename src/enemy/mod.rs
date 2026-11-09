@@ -52,7 +52,7 @@ pub struct EnemySpawner {
 impl Default for EnemySpawner {
     fn default() -> Self {
         Self {
-            spawn_timer: Timer::new(Duration::from_secs(5), TimerMode::Repeating),
+            spawn_timer: Timer::new(Duration::from_secs(3), TimerMode::Repeating),
         }
     }
 }

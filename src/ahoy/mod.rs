@@ -5,7 +5,7 @@ use bevy_framepace::FramepacePlugin;
 mod ahoy_debug;
 mod camera;
 pub(crate) mod player;
-mod scene;
+pub(crate) mod scene;
 mod stable_ground;
 
 pub fn plugin(app: &mut App) {

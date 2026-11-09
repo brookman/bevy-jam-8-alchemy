@@ -28,11 +28,13 @@ pub fn plugin(app: &mut App) {
 #[derive(AssetCollection, Resource)]
 pub struct SceneAssets {
     #[asset(path = "models/alchemy.blend#Scene0")]
-    alchemy_scene: Handle<WorldAsset>,
+    pub alchemy_scene: Handle<WorldAsset>,
     #[asset(path = "models/alchemy.nav")]
-    alchemy_navmesh: Handle<Navmesh>,
+    pub alchemy_navmesh: Handle<Navmesh>,
     #[asset(path = "sprites/crosshair.png")]
-    crosshair_texture: Handle<Image>,
+    pub crosshair_texture: Handle<Image>,
+    #[asset(path = "models/alchemy.blend#Scene2")]
+    pub potion_scene: Handle<WorldAsset>,
 }
 
 #[derive(Component, Reflect, Debug, Default)]
