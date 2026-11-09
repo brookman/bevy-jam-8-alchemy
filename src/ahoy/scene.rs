@@ -83,7 +83,7 @@ fn spawn_scene(mut commands: Commands, assets: Res<SceneAssets>) {
 
 fn spawn_light(mut commands: Commands) {
     commands.spawn((
-        Transform::from_xyz(1.0, 1.0, 0.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
+        Transform::from_xyz(10.0, 13.0, 0.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
         DirectionalLight {
             shadow_maps_enabled: true,
             illuminance: lux::CIVIL_TWILIGHT,

@@ -71,7 +71,7 @@ fn spawn_light(mut commands: Commands) {
             shadow_maps_enabled: true,
             ..default()
         },
-        Transform::from_xyz(4.0, 4.0, 4.0),
+        Transform::from_xyz(4.0, 4.0, -4.0),
     ));
 }
 
