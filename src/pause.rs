@@ -27,7 +27,9 @@ pub enum PauseState {
 
 fn spawn_pause_menu(mut writer: MessageWriter<SpawnMenu>) {
     writer.write(SpawnMenu {
-        text: "🜋 P🜁🜰S🝗D 🜋".to_uppercase(),
+        // text: "🜋 P🜁🜰S🝗D 🜋".to_uppercase(),
+        text: "🜋 🜁L🝒H🝗🝪🝁🝗🝗🝨 🜋".to_uppercase(),
+        text2: "The goblins are attacking!\nI am but a simple alchemist, how should I defend my sanctuary...?\n\nTHE POTIONS!\nI MUST YEET THE POTIONS!".into(),
         font: FontType::Symbols,
         state: Some(PauseState::Paused),
     });

@@ -39,6 +39,9 @@ impl FontType {
     fn default_text_font() -> TextFont {
         TextFont::from_font_size(DEFAULT_TEXT_SIZE)
     }
+    fn default_text_font2() -> TextFont {
+        TextFont::from_font_size(16.0)
+    }
 
     fn to_text_font(&self, font_assets: &FontsAsssets) -> TextFont {
         match self {
@@ -67,6 +70,7 @@ pub struct SpawnText {
 #[derive(Message)]
 pub struct SpawnMenu {
     pub text: String,
+    pub text2: String,
     pub font: FontType,
     pub state: Option<PauseState>,
 }
@@ -75,6 +79,7 @@ fn on_spawn_loading_text(mut messages: MessageReader<SpawnLoadingText>, mut comm
     for message in messages.read() {
         spawn_fullscreen_text(
             &message.text,
+            "",
             Some(AppLoadingState::Loading),
             FontType::default_text_font(),
             &mut commands,
@@ -90,6 +95,7 @@ fn on_spawn_text(
     for message in messages.read() {
         spawn_fullscreen_text(
             &message.text,
+            "",
             message.state,
             message.font.to_text_font(&font_assets),
             &mut commands,
@@ -105,6 +111,7 @@ fn on_spawn_menu(
     for message in messages.read() {
         let root = spawn_fullscreen_text(
             &message.text,
+            &message.text2,
             message.state,
             message.font.to_text_font(&font_assets),
             &mut commands,
@@ -121,7 +128,7 @@ fn on_spawn_menu(
                     },
                     BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
                     children![(
-                        Text::new("Continue"),
+                        Text::new("Click to play"),
                         TextFont::default(),
                         TextColor(Color::WHITE),
                     )],
@@ -137,6 +144,7 @@ fn on_press_continue(_: On<ui_widgets::Activate>, mut next: ResMut<NextState<Pau
 
 fn spawn_fullscreen_text<S: States>(
     text: &str,
+    text2: &str,
     state: Option<S>,
     font: TextFont,
     commands: &mut Commands,
@@ -149,15 +157,25 @@ fn spawn_fullscreen_text<S: States>(
             row_gap: px(20),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
+
             ..default()
         },
         Pickable::IGNORE,
-        children![(
-            Text::new(text),
-            font,
-            TextLayout::new(Justify::Center, LineBreak::NoWrap),
-            Pickable::IGNORE
-        )],
+        BackgroundColor(Color::srgba(0.2, 0.2, 0.2,0.2)),
+        children![
+            (
+                Text::new(text),
+                font,
+                TextLayout::new(Justify::Center, LineBreak::NoWrap),
+                Pickable::IGNORE
+            ),
+            (
+                Text::new(text2),
+                FontType::default_text_font2(),
+                TextLayout::new(Justify::Center, LineBreak::NoWrap),
+                Pickable::IGNORE
+            )
+        ],
     ));
 
     if let Some(state) = state {
