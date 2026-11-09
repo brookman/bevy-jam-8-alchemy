@@ -7,8 +7,8 @@ use bevy_asset_loader::prelude::*;
 #[cfg(feature = "dev")]
 use bevy_inspector_egui::prelude::*;
 use bevy_landmass::{
-    Agent, Agent3dBundle, AgentSettings, AgentTarget3d, Archipelago3d, ArchipelagoOptions,
-    ArchipelagoRef3d, FromAgentRadius, Island, PointSampleDistance3d,
+    Archipelago3d, ArchipelagoOptions, ArchipelagoRef3d, FromAgentRadius, Island,
+    PointSampleDistance3d,
 };
 use bevy_rerecast::Navmesh;
 use landmass_rerecast::{Island3dBundle, NavMeshHandle3d};
@@ -83,10 +83,10 @@ fn spawn_scene(mut commands: Commands, assets: Res<SceneAssets>) {
 
 fn spawn_light(mut commands: Commands) {
     commands.spawn((
-        Transform::from_xyz(0.0, 1.0, 0.0).looking_at(vec3(1.0, -2.0, -2.0), Vec3::Y),
+        Transform::from_xyz(1.0, 1.0, 0.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
         DirectionalLight {
             shadow_maps_enabled: true,
-            illuminance: lux::OVERCAST_DAY,
+            illuminance: lux::CIVIL_TWILIGHT,
             ..default()
         },
         CascadeShadowConfigBuilder {

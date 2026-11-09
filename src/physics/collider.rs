@@ -1,4 +1,4 @@
-use crate::enemy::{Enemy, NavTarget};
+use crate::enemy::{Enemy, EnemyAgent};
 use crate::loading::AppLoadingState;
 use crate::physics::damping::AdaptiveAngularDamping;
 pub(crate) use crate::physics::layer::CollisionLayer;
@@ -108,13 +108,8 @@ fn setup_enemy(
     initial_transforms: Query<&InitialTransform>,
     hierarchy_query: Query<&ChildOf>,
     archipelago3d: Query<Entity, With<Archipelago3d>>,
-    target: Query<&Transform, With<NavTarget>>,
 ) {
     let Ok(archipelago) = archipelago3d.single() else {
-        return;
-    };
-
-    let Ok(target) = target.single() else {
         return;
     };
 
@@ -133,7 +128,8 @@ fn setup_enemy(
             if let Ok(initial_transform) = initial_transforms.get(ancestor) {
                 enemy.insert((
                     initial_transform.0.clone(),
-                    Name::new("EnemyAgent"),
+                    EnemyAgent,
+                    Name::new("Agent"),
                     Agent3dBundle {
                         agent: Agent::default(),
                         archipelago_ref: ArchipelagoRef3d::new(archipelago),
@@ -143,7 +139,7 @@ fn setup_enemy(
                             radius: 0.15,
                         },
                     },
-                    AgentTarget3d::Point(target.translation),
+                    AgentTarget3d::None,
                 ));
 
                 commands.entity(ancestor).remove::<InitialTransform>();

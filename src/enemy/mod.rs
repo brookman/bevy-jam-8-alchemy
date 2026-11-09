@@ -1,3 +1,4 @@
+use crate::ahoy::player::PlayerComponent;
 use crate::loading::{AppLoadingState, LoadCollection};
 use crate::physics::collider::InitialTransform;
 use avian_rerecast::AvianBackendPlugin;
@@ -7,12 +8,9 @@ use bevy_landmass::{AgentDesiredVelocity3d, AgentTarget3d, Landmass3dPlugin};
 use bevy_rerecast::NavmeshPlugins;
 use landmass_rerecast::LandmassRerecastPlugin;
 use std::time::Duration;
-//use vleue_navigator::prelude::*;
 
 pub fn plugin(app: &mut App) {
     app.add_plugins((
-        // VleueNavigatorPlugin,
-        // NavmeshUpdaterPlugin::<Collider, NavObstacle>::default(),
         NavmeshPlugins::default(),
         AvianBackendPlugin::default(),
         Landmass3dPlugin::default(),
@@ -22,20 +20,10 @@ pub fn plugin(app: &mut App) {
     .add_systems(OnEnter(AppLoadingState::Loaded), init)
     .add_systems(
         Update,
-        (
-            init_nav_mesh,
-            spawn_enemy,
-            //update_enemy_path.run_if(on_timer(Duration::from_secs_f32(0.2))),
-            move_enemy,
-        )
+        (init_nav_mesh, spawn_enemy, update_enemy_target, move_enemy)
             .chain()
             .run_if(in_state(AppLoadingState::Loaded)),
-    )
-    // .add_systems(
-    //     Update,
-    //     view_navmesh.run_if(on_timer(Duration::from_secs_f32(1.0))),
-    // )
-    ;
+    );
 }
 
 #[derive(AssetCollection, Resource)]
@@ -48,6 +36,11 @@ struct EnemyAssets {
 #[reflect(Component, Default)]
 #[type_path = "game"]
 pub struct Enemy;
+
+#[derive(Component, Reflect, Debug, Default)]
+#[reflect(Component, Default)]
+#[type_path = "game"]
+pub struct EnemyAgent;
 
 #[derive(Component, Reflect, Debug)]
 #[reflect(Component, Default)]
@@ -200,22 +193,40 @@ fn spawn_enemy(
 //     }
 // }
 
+fn update_enemy_target(
+    targets: Query<&mut AgentTarget3d>,
+    player: Query<&Transform, With<PlayerComponent>>,
+    target_q: Query<&Transform, With<NavTarget>>,
+    mut commands: Commands,
+) {
+    let Ok(player) = player.single() else {
+        return;
+    };
+
+    for mut target in targets {
+        *target = AgentTarget3d::Point(player.translation - Vec3::new(0.0, 0.915, 0.0));
+        // match *target {
+        //     AgentTarget3d::None => {
+        //         info!("update target on enemy_entity {:?}", target);
+        //         *target = AgentTarget3d::Point(target_q.single().unwrap().translation);
+        //     }
+        //     _ => {}
+        // }
+    }
+}
+
 fn move_enemy(
     mut commands: Commands,
-    mut object_query: Query<(
-        &mut Transform,
-        &AgentTarget3d,
-        &AgentDesiredVelocity3d,
-        Entity,
-    )>,
+    mut object_query: Query<(&mut Transform, &AgentDesiredVelocity3d, Entity)>,
     time: Res<Time>,
 ) {
-    for (mut transform, target, desired_velocity, entity) in object_query.iter_mut() {
+    for (mut transform, desired_velocity, entity) in object_query.iter_mut() {
         let vel = desired_velocity.velocity();
 
-        info!("desired_velocity {:?}", desired_velocity);
-
         transform.translation += vel * time.delta_secs();
+
+        let pos = transform.translation - vel;
+        transform.look_at(pos, Vec3::Y);
 
         // if transform.translation.distance(target.) >= 0.1 {
         //     let move_direction = path.current - transform.translation;

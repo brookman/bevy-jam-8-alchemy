@@ -15,6 +15,11 @@ pub fn plugin(app: &mut App) {
 #[type_path = "game"]
 pub struct PlayerSpawner {}
 
+#[derive(Component, Reflect, Clone, Debug, Default)]
+#[reflect(Component, Default)]
+#[type_path = "game"]
+pub struct PlayerComponent;
+
 fn spawn_player(
     _: On<Add<PlayerSpawner>>,
     player_spawner: Query<&Transform, With<PlayerSpawner>>,
@@ -36,7 +41,8 @@ fn spawn_player(
     };
 
     commands.spawn_scene(bsn! {
-        # Player
+        Name::new("Player")
+        PlayerComponent
         transform
         Collider::cylinder(0.35, PLAYER_HEIGHT)
         //CollisionLayers::new(CollisionLayer::Player, CollisionLayer::Obstacle)

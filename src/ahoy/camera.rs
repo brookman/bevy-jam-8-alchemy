@@ -16,6 +16,7 @@ use bevy_ahoy::{
     CharacterController, PickupConfig, PickupHoldConfig, PickupPullConfig, PickupThrowConfig,
 };
 use bevy_asset_loader::asset_collection::AssetCollection;
+use crate::physics::collider::CollisionLayer::Player;
 
 pub fn plugin(app: &mut App) {
     app.load_collection::<CameraAssets>()

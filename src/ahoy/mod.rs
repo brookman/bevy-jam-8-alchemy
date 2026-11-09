@@ -4,7 +4,7 @@ use bevy_framepace::FramepacePlugin;
 
 mod ahoy_debug;
 mod camera;
-mod player;
+pub(crate) mod player;
 mod scene;
 mod stable_ground;
 
