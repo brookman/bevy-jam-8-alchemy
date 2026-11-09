@@ -16,10 +16,10 @@ use bevy_ahoy::{
     CharacterController, PickupConfig, PickupHoldConfig, PickupPullConfig, PickupThrowConfig,
 };
 use bevy_asset_loader::asset_collection::AssetCollection;
-use crate::physics::collider::CollisionLayer::Player;
 
 pub fn plugin(app: &mut App) {
     app.load_collection::<CameraAssets>()
+        .add_systems(Startup, init_camera)
         .add_observer(spawn_camera);
 }
 
@@ -31,13 +31,13 @@ struct CameraAssets {
     specular_map: Handle<Image>,
 }
 
-fn spawn_camera(
-    controller: On<Add<CharacterController>>,
-    mut commands: Commands,
-    assets: Res<CameraAssets>,
-) {
+#[derive(Component, Reflect, Clone, Debug, Default)]
+struct CameraMarker;
+
+fn init_camera(mut commands: Commands) {
     commands.spawn((
-        CharacterControllerCameraOf::new(controller.entity),
+        Name::new("Camera"),
+        CameraMarker,
         Camera3d::default(),
         Projection::Perspective(PerspectiveProjection {
             far: 200.0,
@@ -48,16 +48,27 @@ fn spawn_camera(
         Msaa::Off,
         ScreenSpaceAmbientOcclusion::default(),
         TemporalAntiAliasing::default(),
+        Exposure { ev100: 9.0 },
+        Tonemapping::TonyMcMapface,
+        Bloom::default(),
+        DebandDither::Enabled,
+    ));
+}
+
+fn spawn_camera(
+    controller: On<Add<CharacterController>>,
+    camera: Query<Entity, With<CameraMarker>>,
+    mut commands: Commands,
+    assets: Res<CameraAssets>,
+) {
+    commands.entity(camera.single().unwrap()).insert((
+        CharacterControllerCameraOf::new(controller.entity),
         EnvironmentMapLight {
             diffuse_map: assets.diffuse_map.clone(),
             specular_map: assets.specular_map.clone(),
             intensity: 500.0,
             ..default()
         },
-        Exposure { ev100: 9.0 },
-        Tonemapping::TonyMcMapface,
-        Bloom::default(),
-        DebandDither::Enabled,
         PickupConfig {
             prop_filter: SpatialQueryFilter::from_mask(CollisionLayer::Prop),
             actor_filter: SpatialQueryFilter::from_mask(CollisionLayer::Player),
