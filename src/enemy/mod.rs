@@ -20,7 +20,7 @@ pub fn plugin(app: &mut App) {
     .add_systems(OnEnter(AppLoadingState::Loaded), init)
     .add_systems(
         Update,
-        (init_nav_mesh, spawn_enemy, update_enemy_target, move_enemy)
+        (spawn_enemy, update_enemy_target, move_enemy)
             .chain()
             .run_if(in_state(AppLoadingState::Loaded)),
     );
@@ -88,48 +88,6 @@ fn init(mut commands: Commands) {
     commands.spawn(());
 }
 
-fn init_nav_mesh(
-    nav_mesh_markers: Query<Entity, With<NavMeshMarker>>,
-    children: Query<&Children>,
-    mesh_3ds: Query<&Mesh3d>,
-    meshes: Res<Assets<Mesh>>,
-    mut commands: Commands,
-) {
-    for entity in nav_mesh_markers {
-        for child in children.iter_descendants(entity) {
-            info!("init_nav_mesh on {:?}", child);
-
-            let Ok(mesh_3d) = mesh_3ds.get(child) else {
-                continue;
-            };
-
-            let Some(mesh) = meshes.get(&mesh_3d.0) else {
-                continue;
-            };
-
-            // let Some(nav_mesh) = NavMesh::from_bevy_mesh(mesh) else {
-            //     continue;
-            // };
-
-            // commands.entity(child).insert((
-            //     ManagedNavMesh::from_id(0),
-            //     NavMeshSettings {
-            //         fixed: Triangulation::from_mesh(nav_mesh.get().as_ref(), 0),
-            //         build_timeout: Some(5.0),
-            //         upward_shift: 0.5,
-            //         merge_steps: 2,
-            //         agent_radius: 0.2,
-            //         //agent_radius_on_outer_edge: true,
-            //         ..default()
-            //     },
-            //     NavMeshUpdateMode::Direct,
-            //     Transform::from_rotation(Quat::from_axis_angle(Vec3::X, TAU * 0.25)),
-            // ));
-        }
-        commands.entity(entity).remove::<NavMeshMarker>();
-    }
-}
-
 fn spawn_enemy(
     spawners: Query<(&mut EnemySpawner, &Transform)>,
     assets: Res<EnemyAssets>,
@@ -142,7 +100,7 @@ fn spawn_enemy(
             commands.spawn((
                 WorldAssetRoot(assets.enemy.clone()),
                 InitialTransform(transform.clone()),
-                EnemyRoot
+                EnemyRoot,
             ));
         }
     }
@@ -201,16 +159,17 @@ fn spawn_enemy(
 
 fn update_enemy_target(
     targets: Query<&mut AgentTarget3d>,
-    player: Query<&Transform, With<PlayerComponent>>,
+    player: Query<(Entity, &Transform), With<PlayerComponent>>,
     target_q: Query<&Transform, With<NavTarget>>,
     mut commands: Commands,
 ) {
-    let Ok(player) = player.single() else {
+    let Ok((player, player_transform)) = player.single() else {
         return;
     };
 
     for mut target in targets {
-        *target = AgentTarget3d::Point(player.translation - Vec3::new(0.0, 0.915, 0.0));
+        //*target = AgentTarget3d::Point(player_transform.translation - Vec3::new(0.0, 0.915, 0.0));
+        *target = AgentTarget3d::Entity(player);
         // match *target {
         //     AgentTarget3d::None => {
         //         info!("update target on enemy_entity {:?}", target);
