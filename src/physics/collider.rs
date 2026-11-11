@@ -135,17 +135,21 @@ fn setup_enemy(
 
         for ancestor in hierarchy_query.iter_ancestors(entity) {
             if let Ok(initial_transform) = initial_transforms.get(ancestor) {
+                let desired_speed = fastrand::f32() * 3. + 2.0;
                 enemy.insert((
                     initial_transform.0.clone(),
-                    EnemyAgent,
+                    EnemyAgent {
+                        response_time: 0.15,
+                        max_acceleration: 10.0,
+                    },
                     Name::new("Agent"),
                     Agent3dBundle {
                         agent: Agent::default(),
                         archipelago_ref: ArchipelagoRef3d::new(archipelago),
                         settings: AgentSettings {
-                            desired_speed: 2.0,
-                            max_speed: 3.0,
-                            radius: 0.15,
+                            desired_speed,
+                            max_speed: desired_speed * 1.2,
+                            radius: 0.2,
                         },
                     },
                     AgentTarget3d::None,
