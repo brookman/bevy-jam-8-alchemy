@@ -40,6 +40,7 @@ bevy_rerecast = "0.6.0"
 avian_rerecast = "0.7.0"
 landmass_rerecast = "0.4.0"
 bevy_landmass = "0.13.0"
+getrandom = { version = "0.3", features = ["wasm_js"] }
 
 [patch."https://github.com/brookman/avian_pickup.git"]
 # It's impossible to replace an URL with the same one (but a different revision).
