@@ -4,7 +4,9 @@ use crate::physics::collider::InitialTransform;
 use avian_rerecast::AvianBackendPlugin;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
-use bevy_landmass::{AgentDesiredVelocity3d, AgentTarget3d, Landmass3dPlugin};
+use bevy_landmass::{
+    AgentDesiredVelocity3d, AgentTarget3d, Archipelago3d, Landmass3dPlugin, PointSampleDistance3d,
+};
 use bevy_rerecast::NavmeshPlugins;
 use landmass_rerecast::LandmassRerecastPlugin;
 use std::time::Duration;
@@ -72,18 +74,6 @@ pub struct NavMeshMarker;
 #[type_path = "game"]
 pub struct NavObstacle;
 
-#[derive(Component, Reflect, Debug, Default)]
-#[reflect(Component, Default)]
-#[type_path = "game"]
-pub struct NavTarget;
-
-// #[derive(Component)]
-// pub struct NavPath {
-//     pub initialized: bool,
-//     pub current: Vec3,
-//     pub next: Vec<Vec3>,
-// }
-
 fn init(mut commands: Commands) {
     commands.spawn(());
 }
@@ -106,77 +96,38 @@ fn spawn_enemy(
     }
 }
 
-// fn update_enemy_path(
-//     mut enemy: Query<(&Transform, &mut NavPath)>,
-//     target: Query<&Transform, With<NavTarget>>,
-//     navmeshes: Res<Assets<NavMesh>>,
-//     navmesh: Query<&ManagedNavMesh>,
-//     //mut gizmos: Gizmos,
-// ) {
-//     for (transform, mut path) in &mut enemy {
-//         let navmesh = navmeshes.get(navmesh.single().unwrap()).unwrap();
-//         let target = target.single().unwrap().translation;
-//
-//         let Some(new_path) = navmesh.transformed_path(transform.translation, target) else {
-//             break;
-//         };
-//
-//         if let Some((first, remaining)) = new_path.path.split_first() {
-//             let mut remaining = remaining.to_vec();
-//             remaining.reverse();
-//             *path = NavPath {
-//                 initialized: true,
-//                 current: *first,
-//                 next: remaining,
-//             };
-//         }
-//     }
-// }
-
-// fn move_enemy(
-//     mut commands: Commands,
-//     mut object_query: Query<(&mut Transform, &mut NavPath, Entity)>,
-//     time: Res<Time>,
-// ) {
-//     for (mut transform, mut path, entity) in object_query.iter_mut() {
-//         if !path.initialized {
-//             continue;
-//         }
-//         if transform.translation.distance(path.current) >= 0.1 {
-//             let move_direction = path.current - transform.translation;
-//             transform.translation += move_direction.normalize() * time.delta_secs() * 3.0;
-//         } else {
-//             if let Some(next) = path.next.pop() {
-//                 path.current = next;
-//             } else {
-//                 commands.entity(entity).remove::<NavPath>();
-//                 // let target_entity = object.0.take().unwrap();
-//                 // commands.entity(target_entity).despawn();
-//             }
-//         }
-//     }
-// }
-
 fn update_enemy_target(
     targets: Query<&mut AgentTarget3d>,
-    player: Query<(Entity, &Transform), With<PlayerComponent>>,
-    target_q: Query<&Transform, With<NavTarget>>,
-    mut commands: Commands,
+    player: Query<&Transform, With<PlayerComponent>>,
+    archipelago: Query<&Archipelago3d>,
 ) {
-    let Ok((player, player_transform)) = player.single() else {
+    let Ok(player_transform) = player.single() else {
+        return;
+    };
+
+    let Ok(archipelago) = archipelago.single() else {
+        return;
+    };
+
+    let distance = PointSampleDistance3d {
+        horizontal_distance: 2.0,
+        distance_above: 0.1,
+        distance_below: 5.0,
+        vertical_preference_ratio: 1.0,
+        animation_link_max_vertical_distance: 1.0,
+    };
+
+    let nearest = archipelago
+        .sample_point(player_transform.translation, &distance)
+        .ok()
+        .map(|sample| sample.point());
+
+    let Some(nearest) = nearest else {
         return;
     };
 
     for mut target in targets {
-        //*target = AgentTarget3d::Point(player_transform.translation - Vec3::new(0.0, 0.915, 0.0));
-        *target = AgentTarget3d::Entity(player);
-        // match *target {
-        //     AgentTarget3d::None => {
-        //         info!("update target on enemy_entity {:?}", target);
-        //         *target = AgentTarget3d::Point(target_q.single().unwrap().translation);
-        //     }
-        //     _ => {}
-        // }
+        *target = AgentTarget3d::Point(nearest);
     }
 }
 
@@ -207,23 +158,3 @@ fn move_enemy(
         // }
     }
 }
-
-// fn view_navmesh(
-//     mut commands: Commands,
-//     navmeshes: Query<Entity, With<ManagedNavMesh>>,
-//     mut current: Local<usize>,
-// ) {
-//     if navmeshes.iter().len() == 0 {
-//         info!("no nav meshes");
-//         return;
-//     }
-//     for (i, entity) in navmeshes.iter().sort::<Entity>().enumerate() {
-//         commands.entity(entity).remove::<NavMeshDebug>();
-//         if i == *current {
-//             commands
-//                 .entity(entity)
-//                 .insert(NavMeshDebug(CYAN_500.into()));
-//         }
-//     }
-//     *current = (*current + 1) % navmeshes.iter().len();
-// }
