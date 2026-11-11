@@ -110,11 +110,11 @@ fn update_enemy_target(
     };
 
     let distance = PointSampleDistance3d {
-        horizontal_distance: 2.0,
+        horizontal_distance: 1.0,
         distance_above: 0.1,
         distance_below: 5.0,
         vertical_preference_ratio: 1.0,
-        animation_link_max_vertical_distance: 1.0,
+        animation_link_max_vertical_distance: 0.5,
     };
 
     let nearest = archipelago
